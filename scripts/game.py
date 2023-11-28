@@ -322,7 +322,7 @@ class Game:
 
             # start gameplay music
             if event.type == self.START_GAMEPLAY_MUSIC:
-                pygame.mixer.music.load('assets/sounds/Gameplay.wav')
+                pygame.mixer.music.load('assets/sounds/joyride_ost.wav')
                 pygame.mixer.music.play(-1, fade_ms=2600)
 
             # kill player
