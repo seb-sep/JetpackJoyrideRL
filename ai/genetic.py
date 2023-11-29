@@ -8,3 +8,23 @@ We can keep track of all the actions taken per tick and the game state at that t
 
 With that, we can then optimize the action set of the bot and it can make a calculation per tick on whether to go up or not.
 """
+
+epochs = 10
+
+generation = []
+
+
+agent = [0, 0, 0, 1]
+# position of player, obstacle, projectile
+
+len(agent)
+agent = agent, len(agent)
+
+
+generation_size = 10
+generation.append(agent)
+
+# maximimize score
+
+for generation in range(epochs):
+    for 
