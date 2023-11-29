@@ -50,7 +50,7 @@ class Main:
         self.dt = self.clock.tick(settings.FPS) / 1000  # delta time in seconds | cap fps
 
 
-if __name__ == '__main__':
+def main():
     main = Main()
     while main.running:
         main.main_loop()
