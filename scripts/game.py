@@ -381,6 +381,13 @@ class Game:
         # destroy obstacles if has more than needed
         if len(self.obstacles_list) > 12:
             self.obstacles_list.pop(0)
+            
+        # destroy obstacles if they are behind the player
+        if len(self.obstacles_list) > 0:
+            while self.obstacles_list[0][0].x < self.player_pos_x - 100:
+                self.obstacles_list.pop(0)
+                print(self.obstacles_list)
+        
 
     def update_x_velocity(self):
         if not self.dead and self.player_vel_x < settings.MAX_X_VELOCITY and not self.lerp_start_velocity:
