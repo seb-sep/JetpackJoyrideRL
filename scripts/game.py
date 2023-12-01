@@ -7,6 +7,9 @@ import scripts.tools as tools
 import scripts.settings as settings
 import scripts.particle_generator as particle_generator
 
+from ..ai.genetic import Species
+import numpy as np
+
 
 class Game:
 
@@ -101,14 +104,18 @@ class Game:
         self.coins_collected = 0
 
         # player
-        self.is_moving_up = False
+        # self.is_moving_up = False replace this with the decision from the genetic algorithm
         self.dead = False
         self.died_by = None  # Possibilities 'eletricity' and 'rocket'
         self.paused = False
-        self.player_pos_y = 645
+        # self.player_pos_y = 645
         self.player_pos_x = -100
         self.player_vel_x = settings.DEFAULT_X_VELOCITY  # TODO make game progressive faster
-        self.player_vel_y = 0
+        # self.player_vel_y = 0
+
+        # species 
+        self.species = Species(1)
+        
 
         # objets positions
         self.bg_pos_x = 0
@@ -165,40 +172,47 @@ class Game:
 
     # TODO move this to game loop and functions
     def move_things(self):
+        '''
+        NOTE: Nothing regarding x velocities or positions of the player need to 
+        be changed, since all players in a generation share those values
+        '''
         # do the death lerp velocity
-        if self.lerp_x_vel:
-            self.lerp_factor += self.main.dt*0.75
-            self.player_vel_x = self.lerp(self.player_vel_x_start, 0, self.lerp_factor)
-            if self.player_vel_x <= 0:
-                self.lerp_x_vel = False
-                self.player_vel_x = 0
+        # if self.lerp_x_vel:
+        #     self.lerp_factor += self.main.dt*0.75
+        #     self.player_vel_x = self.lerp(self.player_vel_x_start, 0, self.lerp_factor)
+        #     if self.player_vel_x <= 0:
+        #         self.lerp_x_vel = False
+        #         self.player_vel_x = 0
 
         # TEST
         # if not self.lerp_start_velocity:  # block controls at start
-        if self.lerp_start_velocity:
-            lerping_time = 4
-            self.timer1 += self.main.dt / lerping_time  # divided by time in seconds of lerp
+        # if self.lerp_start_velocity:
+        #     lerping_time = 4
+        #     self.timer1 += self.main.dt / lerping_time  # divided by time in seconds of lerp
 
-            # lerp velocity
-            self.player_vel_x = settings.DEFAULT_X_VELOCITY - self.lerp(0, settings.DEFAULT_X_VELOCITY, self.timer1)
+        #     # lerp velocity
+        #     self.player_vel_x = settings.DEFAULT_X_VELOCITY - self.lerp(0, settings.DEFAULT_X_VELOCITY, self.timer1)
 
-            # lerp position x
-            self.player_pos_x = 256 - self.lerp(100, 256, self.timer1)
-            if self.timer1 >= 1 or self.player_vel_x >= settings.DEFAULT_X_VELOCITY:
-                self.lerp_start_velocity = False
-                self.player_vel_x = settings.DEFAULT_X_VELOCITY
-                self.player_pos_x = 256
+        #     # lerp position x
+        #     self.player_pos_x = 256 - self.lerp(100, 256, self.timer1)
+        #     if self.timer1 >= 1 or self.player_vel_x >= settings.DEFAULT_X_VELOCITY:
+        #         self.lerp_start_velocity = False
+        #         self.player_vel_x = settings.DEFAULT_X_VELOCITY
+        #         self.player_pos_x = 256
 
-        # background movement
-        self.move_background()
+        # background movement, doesn't need to change
+        self.move_background() 
 
-        # obstacle movement
+        # obstacle movement, doesn't need to change
         self.foreground_pos_x -= self.player_vel_x * self.main.dt * 1.1  # 1.1 is for parallax with background
         self.move_obstacles(self.obstacles_list)
 
-        # particle movement
+        # particle movement, doesn't matter
         self.fly_particle.update((self.player_pos_x + 19, self.player_pos_y + 51), self.is_moving_up)
 
+
+        # calculate which players should move up
+        actions = self.species.choose_action(self.get_state())
         # change player velocity (up || down) -change faster if going faster
         if not self.is_moving_up:
             self.player_vel_y += self.gravity * self.main.dt * self.player_vel_x * 1.8
@@ -237,6 +251,36 @@ class Game:
             obstacle.x = self.foreground_pos_x + relative_pos  # move
             self.main.screen.blit(self.obstacles_surface, [obstacle.x, obstacle.y])  # draw
 
+    def get_state(self) -> np.ndarray:
+        '''
+        State array values:
+        0: y position 
+        1: y velocity
+        2: x velocity
+        3: x value of closest zapper
+        4: y value of closest zapper
+        5: x value of closest projectile
+        6: y value of closest projectile
+
+        Create a matrix of the state for each player in the generation.
+        Note that most of these will be identical, but the duplication is necessary for
+        a vectorized matrix multiplication.
+        '''
+
+        zapper_x, zappper_y = self.get_closest_zapper()
+        rocket_x, rocket_y = self.get_closest_rocket()
+
+        state = np.zeros((self.species.generation_size, 7))
+        state[:, 0] = self.species.states[:, 0]
+        state[:, 1] = self.species.states[:, 1]
+        state[:, 2] = self.player_vel_x
+        state[:, 3] = zapper_x
+        state[:, 4] = zappper_y
+        state[:, 5] = rocket_x
+        state[:, 6] = rocket_y
+
+        return state
+        
     ################## CREATE ##################
 
     def create_obstacle(self):
@@ -378,8 +422,8 @@ class Game:
             self.obstacles_list.append(self.create_obstacle())
             self.obstacle_num += 1
 
-        # destroy obstacles if has more than needed
-        if len(self.obstacles_list) > 12:
+        # destroy obstacles if they are behind the player
+        while self.obstacles_list[0][0].x < self.player_pos_x:
             self.obstacles_list.pop(0)
 
     def update_x_velocity(self):
