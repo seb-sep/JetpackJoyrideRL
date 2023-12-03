@@ -1,4 +1,6 @@
 import numpy as np
+from node import Node
+from connection_gene import ConnectionGene
 
 class Genome:
     """
@@ -166,6 +168,3 @@ class Genome:
         pass
 
     # Additional methods like draw_genome() if we are ready to visualize the training process
-
-    
-    
