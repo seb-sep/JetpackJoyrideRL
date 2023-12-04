@@ -1,6 +1,6 @@
 import numpy as np
-from node import Node
-from connection_gene import ConnectionGene
+from scripts.ai.connection_gene import ConnectionGene
+from scripts.ai.node import Node
 
 class Genome:
     def __init__(self, inputs, outputs):

@@ -2,7 +2,7 @@ import pygame
 import sys
 import scripts.tools as tools
 import scripts.settings as settings
-import scripts.game as game
+import scripts.genetic_game as game
 
 
 # base class for menu

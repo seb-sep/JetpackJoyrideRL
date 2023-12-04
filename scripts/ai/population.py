@@ -1,13 +1,10 @@
 import numpy as np
 import random
-from player import Player
+from scripts.ai.player import Player
 
 class Population:
     def __init__(self, size):
         self.pop = [Player() for _ in range(size)]
-        for player in self.pop:
-            player.brain.generate_network()
-            player.brain.mutate(self.innovation_history)
 
         self.best_player = None
         self.best_score = 0
@@ -19,6 +16,10 @@ class Population:
         self.new_stage = False
         self.population_life = 0
 
+        for player in self.pop:
+            player.brain.generate_network()
+            player.brain.mutate(self.innovation_history)
+            
     def update_alive(self):
         self.population_life += 1
         for player in self.pop:
@@ -74,3 +75,10 @@ class Population:
     def kill_bad_species(self):
         average_sum = self.get_avg_fitness_sum()
         self.species = [s for s in self.species if len(s.players) / average_sum * len(self.pop) >= 1]
+        
+    # Checks if all the players in the population have died
+    def all_players_dead(self):
+        for player in self.pop:
+            if player.dead == False: return False
+        
+        return True
