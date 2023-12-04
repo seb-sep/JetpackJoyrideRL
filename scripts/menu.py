@@ -204,8 +204,10 @@ class Credits:
         tools.draw_text(self.menu.main.screen, 'DarkLava', 'left', 32, (settings.WIDTH * 5.6 / 10, 122 + self.text_y_offset))
         tools.draw_text(self.menu.main.screen, 'New Athletic M54 font by', 'left', 32, (settings.WIDTH * 5.6 / 10, 180 + self.text_y_offset))
         tools.draw_text(self.menu.main.screen, 'justme54s', 'left', 32, (settings.WIDTH * 5.6 / 10, 212 + self.text_y_offset))
-        tools.draw_text(self.menu.main.screen, 'Special thanks to HalfBrick for', 'left', 32, (settings.WIDTH * 5.6 / 10, 270 + self.text_y_offset))
-        tools.draw_text(self.menu.main.screen, 'Jetpack Joyride', 'left', 32, (settings.WIDTH * 5.6 / 10, 302 + self.text_y_offset))
+        tools.draw_text(self.menu.main.screen, 'Reinforcement Learning Agent by', 'left', 32, (settings.WIDTH * 5.6 / 10, 270 + self.text_y_offset))
+        tools.draw_text(self.menu.main.screen, 'Jai, Sebastian, and Jack', 'left', 32, (settings.WIDTH * 5.6 / 10, 302 + self.text_y_offset))
+        tools.draw_text(self.menu.main.screen, 'Special thanks to HalfBrick for', 'left', 32, (settings.WIDTH * 5.6 / 10, 370 + self.text_y_offset))
+        tools.draw_text(self.menu.main.screen, 'Jetpack Joyride', 'left', 32, (settings.WIDTH * 5.6 / 10, 412 + self.text_y_offset))
 
         self.check_buttons_interactions()
 
