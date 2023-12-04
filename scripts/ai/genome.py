@@ -3,13 +3,6 @@ from node import Node
 from connection_gene import ConnectionGene
 
 class Genome:
-    """
-    This will be the neural network for the players in the game.
-    """
-    
-    import numpy as np
-
-class Genome:
     def __init__(self, inputs, outputs):
         self.genes = []  # List of connectionGene objects
         self.nodes = []  # List of Node objects
