@@ -362,12 +362,12 @@ class Game:
                     else:
                         self.paused = True
                         pygame.mixer.music.pause()
-                if event.key == pygame.K_w:
+                if event.key == pygame.K_w or event.key == pygame.K_SPACE:
                     self.is_moving_up = True
 
             # inputs key up
             if event.type == pygame.KEYUP and not self.dead:
-                if event.key == pygame.K_w:
+                if event.key == pygame.K_w or event.key == pygame.K_SPACE:
                     self.is_moving_up = False
 
     def check_obstacles(self):
