@@ -135,7 +135,7 @@ class Player:
                   self.player_pos_y, 
                   self.player_vel_x, 
                   self.player_vel_y, 
-                  gap_between, 0, 0, 0, 0]
+                  gap_between]
         
         self.vision = vision
         
@@ -143,8 +143,11 @@ class Player:
     def think(self):
         # Neural network decision-making logic goes here.
         max = 0
+        print("Vision", self.vision)
+        decision = self.brain.feed_forward2(self.vision)
+        print(decision)
         
-        decision = self.brain.feed_forward(self.vision)
+        self.is_moving_up = True if decision == 1 else False
         
         
         

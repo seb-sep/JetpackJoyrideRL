@@ -146,8 +146,8 @@ class Game:
 
     def update_game(self, main):
         
-        if (not self.population.pop[0].dead):
-            print('Population', self.population.pop[0].player_pos_y, self.population.pop[0].dead)
+        # if (not self.population.pop[0].dead):
+            # print('Population', self.population.pop[0].player_pos_y, self.population.pop[0].dead)
             
         self.main = main
 
@@ -181,11 +181,11 @@ class Game:
                 obstacles = []
                 for obstacle, _ in self.obstacles_list:
                     if obstacle.x > player.player_pos_x: obstacles.append(obstacle)
-                print(obstacles)
+                # print(obstacles)
                 player.look(obstacles, self.player_vel_x)
                 
                 # Player thinks and makes a decision (move_up or not move_up)
-                player_decision = player.think()
+                player.think()
                 
                 player.update(player.player_vel_x, self.main)
                 player.show(main.screen)
@@ -392,22 +392,24 @@ class Game:
             #     self.check_rockets()
 
             # inputs key down
-            if event.type == pygame.KEYDOWN and not self.dead:
-                # pause
-                if event.key == pygame.K_ESCAPE:
-                    if self.paused:
-                        self.paused = False
-                        pygame.mixer.music.unpause()
-                    else:
-                        self.paused = True
-                        pygame.mixer.music.pause()
-                if event.key == pygame.K_w or event.key == pygame.K_SPACE:
-                    self.is_moving_up = True
+            # if event.type == pygame.KEYDOWN and not self.dead:
+            #     # pause
+            #     if event.key == pygame.K_ESCAPE:
+            #         if self.paused:
+            #             self.paused = False
+            #             pygame.mixer.music.unpause()
+            #         else:
+            #             self.paused = True
+            #             pygame.mixer.music.pause()
+            #     if event.key == pygame.K_w or event.key == pygame.K_SPACE:
+            #         self.is_moving_up = True
 
-            # inputs key up
-            if event.type == pygame.KEYUP and not self.dead:
-                if event.key == pygame.K_w or event.key == pygame.K_SPACE:
-                    self.is_moving_up = False
+            # # inputs key up
+            # if event.type == pygame.KEYUP and not self.dead:
+            #     if event.key == pygame.K_w or event.key == pygame.K_SPACE:
+            #         self.is_moving_up = False
+                
+                
 
     def check_obstacles(self):
         # check if need to create or destroy obstacles this frame, and do if needed
