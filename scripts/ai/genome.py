@@ -1,6 +1,7 @@
 import numpy as np
 from scripts.ai.connection_gene import ConnectionGene
 from scripts.ai.node import Node
+import scipy.special as sp
 
 class Genome:
     def __init__(self, inputs, outputs):
@@ -31,6 +32,9 @@ class Genome:
         self.nextNode += 1
         self.nodes[self.biasNode].layer = 0
 
+        self.l1 = np.random.rand(6, 3)
+        self.l2 = np.random.rand(3, 2)
+
     def get_node(self, node_number):
         for node in self.nodes:
             if node.number == node_number:
@@ -59,6 +63,13 @@ class Genome:
             node.input_sum = 0
 
         return outs
+    
+    def feed_forward2(self, inputs):
+        inputs = [1] + inputs # add bias
+        inputs = np.array(inputs)
+
+        x = sp.expit(sp.expit(inputs.dot(self.l1)).dot(self.l2))
+        return np.argmax(x) # 0 for no lift, 1 for lift
 
     def generate_network(self):
         self.connect_nodes()

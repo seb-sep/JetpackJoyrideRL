@@ -43,7 +43,7 @@ class Player:
         self.DIED = pygame.USEREVENT + 1  # event id
         self.died = pygame.event.Event(self.DIED)  # event object
         
-        # self.gravity = 1.2
+        self.gravity = 1.2
         self.run_count = -5
         # self.size = 20
         
@@ -62,22 +62,21 @@ class Player:
     def show(self, screen):
         # Draw the player on the screen
         player_image = self.player_fly_surface if not self.dead else self.player_dead_surface
-        screen.blit(player_image, (self.pos_x, self.pos_y))
+        # screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
+        screen.blit(player_image, (-50, 100))
+        print("Player pos: ", self.player_pos_x, self.player_pos_y)
         
 
-    def increment_counters(self):
-        self.lifespan += 1
-        if self.lifespan % 3 == 0:
-            self.score += 1
-
-    def move(self, dt, game_speed):
+    def move(self, game_speed, main):
         # Movement logic goes here. Adjust posY and check for collisions.
+        
+        dt = main.dt
         
         # change player velocity (up || down) -change faster if going faster
         if not self.is_moving_up:
-            self.player_vel_y += self.gravity * self.main.dt * self.player_vel_x * 1.8
+            self.player_vel_y += self.gravity * dt * self.player_vel_x * 1.8
         else:
-            self.player_vel_y -= self.gravity * self.main.dt * self.player_vel_x * 1.8
+            self.player_vel_y -= self.gravity * dt * self.player_vel_x * 1.8
 
         # keep player inside the bound
         if self.player_pos_y < settings.MAX_HEIGHT:  # if touch celling
@@ -87,20 +86,19 @@ class Player:
             self.player_pos_y = settings.MIN_HEIGHT - self.player_surface.get_size()[0]
             self.player_vel_y = 0
         else:
-            self.player_pos_y += self.player_vel_y * self.main.dt
+            self.player_pos_y += self.player_vel_y * dt
 
         # update player position and draw
         self.player_rect.y = self.player_pos_y
         self.player_rect.x = self.player_pos_x
-        self.main.screen.blit(self.player_surface, self.player_rect)
+        main.screen.blit(self.player_surface, self.player_rect)
 
         # increase distance
         if not self.dead:
-            self.score += self.main.dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
+            self.score += dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
         pass
 
     def update(self, dt, game_speed):
-        self.increment_counters()
         self.move(dt, game_speed)
 
     def look(self, obstacles, game_speed):
@@ -115,6 +113,8 @@ class Player:
         
         ## Player Variables ##
             # Player Y position
+            # X pos
+            # X and y velocities
             
         ## Obstacle Variables ##
             # Find distance to the closest obstacle
@@ -122,15 +122,28 @@ class Player:
             # Width of the closest obstacle
             # Y position of closest obstacle
         
-            # Find the gap between the current and next closes obstacles
+            # Find the gap between the current and next closest obstacles
+            # X distance 
+            # Y distance
+        gap_between = 680
         
-        pass
+        vision = [self.player_pos_x,
+                  self.player_pos_y, 
+                  self.player_vel_x, 
+                  self.player_vel_y, 
+                  gap_between]
+        
+        self.vision = vision
+        
 
     def think(self):
         # Neural network decision-making logic goes here.
         max = 0
+        print("Vision", self.vision)
+        decision = self.brain.feed_forward2(self.vision)
+        print(decision)
         
-        decision = self.brain.feed_forward(self.vision)
+        self.is_moving_up = True if decision == 1 else False
         
         
         
