@@ -216,7 +216,6 @@ class Genome:
 
         return clone
 
-    # Placeholder for the connect_nodes method, assuming it's defined elsewhere
     def connect_nodes(self):
         [node.output_connections.clear() for node in self.nodes]
         [gene.from_node.output_connections.append(gene) for gene in self.genes]
