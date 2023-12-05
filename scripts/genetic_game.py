@@ -1,8 +1,10 @@
 # this module was the first made, need more object oriented, create player, obstacle, debug and save/load own classes
 
+import os
 import pygame
 import random
 import sys
+from scripts.ai.player import Player
 from scripts.ai.population import Population
 import scripts.tools as tools
 import scripts.settings as settings
@@ -141,7 +143,17 @@ class Game:
         # self.main.dt = 0  # TEST, make game freeze until loaded
         
         ####################### GENETIC ALGORITHM #######################
-        self.population = Population(size=200) if population is None else population  # Initialize population with 50 players
+        if os.path.exists('beast.pkl'): 
+            player = Player()
+            
+            with open('beast.pkl', 'rb') as file:
+                player.brain = pickle.load(file)
+            
+            self.population = Population(1)
+            self.population.pop = [player]
+        else: 
+            self.population = Population(size=200) if population is None else population  # Initialize population with 50 players
+       
         self.current_generation = 0
         self.best_score = 0
 
