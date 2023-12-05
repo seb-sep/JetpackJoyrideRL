@@ -10,6 +10,7 @@ import scripts.tools as tools
 import scripts.settings as settings
 import scripts.particle_generator as particle_generator
 import pickle
+from matplotlib import pyplot as plt
 
 
 class Game:
@@ -143,7 +144,7 @@ class Game:
         # self.main.dt = 0  # TEST, make game freeze until loaded
         
         ####################### GENETIC ALGORITHM #######################
-        if os.path.exists('beast.pkl'): 
+        if len(sys.argv) > 1 and sys.argv[1] == 'load':
             player = Player()
             self.main.game_speed = 500
             with open('beast.pkl', 'rb') as file:
@@ -207,6 +208,14 @@ class Game:
         if self.population.all_players_dead():
             # self.evaluate_fitness()
             print(self.population.best_score)
+            self.main.scores.append(max(p.score for p in self.population.pop))
+            plt.plot(self.main.scores)
+            plt.xlabel('Generation')
+            plt.ylabel('Score')
+            plt.title('Score per Generation')
+            plt.savefig('scores.png')
+
+
             self.population.natural_selection()
             self.current_generation += 1
 
@@ -422,6 +431,7 @@ class Game:
                     to_save = self.population.best_player.brain
                     with open('beast.pkl', 'wb') as file:
                         pickle.dump(to_save, file)
+                                        
                     
             # # inputs key up
             # if event.type == pygame.KEYUP and not self.dead:

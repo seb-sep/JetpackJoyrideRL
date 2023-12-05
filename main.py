@@ -5,8 +5,6 @@ import scripts.game as game
 import scripts.menu as menu
 import scripts.settings as settings
 
-import cProfile
-import re
 
 
 class Main:
@@ -38,6 +36,7 @@ class Main:
         self.in_menu = True
         self.game = None
         self.menu = menu.Menu(self)
+        self.scores = []
 
         self.already_instantiated_game = False
 
