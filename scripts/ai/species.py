@@ -1,4 +1,5 @@
 import random
+from scripts.ai.genome import Genome
 
 class Species:
     def __init__(self, player=None):
@@ -18,7 +19,7 @@ class Species:
             self.rep = player.brain.clone()
             # self.champ = player.clone_for_replay()
 
-    def same_species(self, genome):
+    def same_species(self, genome: Genome):
         excess_and_disjoint = self.get_excess_disjoint(genome, self.rep)
         average_weight_diff = self.average_weight_diff(genome, self.rep)
 
@@ -29,7 +30,8 @@ class Species:
         compatibility = (self.excess_coeff * excess_and_disjoint / large_genome_normaliser) + (self.weight_diff_coeff * average_weight_diff)
         return compatibility < self.compatibility_threshold
 
-    def get_excess_disjoint(self, brain1, brain2):
+    def get_excess_disjoint(self, brain1: Genome, brain2: Genome):
+        # print(brain1, brain2)
         matching = 0.0
         for gene1 in brain1.genes:
             for gene2 in brain2.genes:
@@ -61,7 +63,7 @@ class Species:
                 self.staleness = 0
                 self.best_fitness = self.players[0].fitness
                 self.rep = self.players[0].brain.clone()
-                self.champ = self.players[0].clone_for_replay()
+                # self.champ = self.players[0].clone_for_replay()
             else:
                 self.staleness += 1
 

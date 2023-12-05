@@ -17,9 +17,11 @@ class Population:
         self.new_stage = False
         self.population_life = 0
 
+        sum = 0
         for player in self.pop:
             player.brain.generate_network()
             player.brain.mutate(self.innovation_history)
+            sum += player.fitness
             
     def update_alive(self):
         self.population_life += 1
@@ -43,17 +45,24 @@ class Population:
 
     def natural_selection(self):
         self.speciate()
+        print('species', len(self.species))
         self.calculate_fitness()
+        print('species', len(self.species))
         self.sort_species()
+        print('species', len(self.species))
         # Additional methods and logic
-        self.kill_stale_species()
+        # self.kill_stale_species()
+        # print('species', len(self.species))
         self.kill_bad_species()
+        print('species', len(self.species))
         self.cull_species()
+        print('species', len(self.species))
         self.mass_extinction()
+        print('species', len(self.species))
+        
         self.reproduce()
     
     def speciate(self):
-        # to be reviewed
         for player in self.pop:
             species_found = False
             for species in self.species:
@@ -88,11 +97,15 @@ class Population:
             species.set_average()
 
     def kill_stale_species(self):
+        [print(species.staleness) for species in self.species]
         self.species = [s for s in self.species if s.staleness < 15]
 
     def kill_bad_species(self):
         average_sum = self.get_avg_fitness_sum()
-        self.species = [s for s in self.species if len(s.players) / average_sum * len(self.pop) >= 1]
+        # print(len(self.pop), average_sum)
+        # only save the species which have a fitness greater than the average
+        self.species = [s for s in self.species if s.average_fitness >= average_sum]
+        # self.species = [s for s in self.species if len(s.players) / average_sum * len(self.pop) >= 1]
         
     # Checks if all the players in the population have died
     def all_players_dead(self):
@@ -105,7 +118,7 @@ class Population:
         saved_players = sum([len(species.players) for species in self.species if len(species.players) > 1])
         for species in self.species:
             species.sort_species()
-            new_population.append(species.champ.clone())
+            # new_population.append(species.champ.clone())
             for _ in range(len(species.players) - 1):
                 new_population.append(species.give_me_baby(self.innovation_history))
         while len(new_population) < len(self.pop) - saved_players:

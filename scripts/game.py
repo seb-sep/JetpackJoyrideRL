@@ -386,7 +386,6 @@ class Game:
         if len(self.obstacles_list) > 0:
             while self.obstacles_list[0][0].x < self.player_pos_x - 100:
                 self.obstacles_list.pop(0)
-                print(self.obstacles_list)
         
 
     def update_x_velocity(self):

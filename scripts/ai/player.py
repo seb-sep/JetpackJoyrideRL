@@ -14,7 +14,7 @@ class Player:
         self.score = 0
         self.gen = 0
         self.genome_inputs = 7
-        self.genome_outputs = 3
+        self.genome_outputs = 2
         self.brain = Genome(self.genome_inputs, self.genome_outputs)  # Assuming Genome is defined elsewhere
         self.vision = np.zeros(self.genome_inputs)
         self.decision = np.zeros(self.genome_outputs)
@@ -46,11 +46,6 @@ class Player:
         self.run_count = -5
         # self.size = 20
         
-        # Don't need the replay functionality for now
-        # self.replay = False
-        # self.replay_obstacles = []
-        # self.replay_birds = []
-        
         self.local_obstacle_history = []
         self.local_random_addition_history = []
         self.history_counter = 0
@@ -63,7 +58,7 @@ class Player:
         player_image = self.player_fly_surface if not self.dead else self.player_dead_surface
         # screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
         screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
-        print("Player pos: ", self.player_pos_x, self.player_pos_y)
+        # print("Player pos: ", self.player_pos_x, self.player_pos_y)
         
 
     def move(self, game_speed, main):
@@ -125,8 +120,8 @@ class Player:
             # X distance 
             # Y distance
         gap_between = 680
-        dist_to_obs_x = 0
-        dist_to_obs_y = 0
+        dist_to_obs_x = 999
+        dist_to_obs_y = 999
         
         if len(obstacles) > 0:
             dist_to_obs_x = obstacles[0].x - self.player_pos_x
@@ -147,15 +142,31 @@ class Player:
         # Neural network decision-making logic goes here.
         max = 0
         print("Vision", self.vision)
-        decision = self.brain.feed_forward2(self.vision)
+        # decision = self.brain.feed_forward2(self.vision)
+        decision = self.brain.feed_forward(self.vision)
         print(decision)
         
         self.is_moving_up = True if decision == 1 else False
         
+    def calculate_fitness(self):
+        self.fitness = self.score**2
+
+    def clone(self):
+        clone = Player()
+        clone.brain = self.brain.clone()
+        clone.brain.generate_network()
+        clone.fitness = self.fitness
+        clone.gen = self.gen
+        clone.best_score = self.best_score
+        return clone
         
         
+    def crossover(self, parent2):
+        child = Player()
+        child.brain = self.brain.crossover(parent2.brain)
+        child.brain.generate_network()
+        return child
         
 
-    # Additional methods like clone, crossover, etc., go here.
 
-# Add other methods like cloneForReplay, calculateFitness, crossover, updateLocalObstacles as per your game logic.
+# Add other methods like cloneForReplay, , crossover, updateLocalObstacles as per your game logic.

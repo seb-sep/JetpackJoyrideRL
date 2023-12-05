@@ -5,7 +5,7 @@ class Node:
         self.number = number
         self.input_sum = 0.0  # Current sum before activation
         self.output_value = 0.0  # Value after activation function is applied
-        self.output_connections = []  # List of connectionGene objects
+        self.output_connections = []  # List of connection gene objects
         self.layer = 0  # Layer of the node in the neural network
 
     def engage(self):
@@ -14,6 +14,7 @@ class Node:
             self.output_value = self.sigmoid(self.input_sum)
 
         # Propagate the output value to the next nodes
+        print(len(self.output_connections))
         for connection in self.output_connections:
             if connection.enabled:
                 connection.to_node.input_sum += connection.weight * self.output_value

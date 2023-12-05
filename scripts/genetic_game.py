@@ -11,7 +11,7 @@ import scripts.particle_generator as particle_generator
 
 class Game:
 
-    def __init__(self, main):
+    def __init__(self, main, population=None):
         self.main = main
 
         # self.rocket_spawner = RocketSpawner(self.main)
@@ -140,7 +140,7 @@ class Game:
         # self.main.dt = 0  # TEST, make game freeze until loaded
         
         ####################### GENETIC ALGORITHM #######################
-        self.population = Population(size=10)  # Initialize population with 50 players
+        self.population = Population(size=50) if population is None else population  # Initialize population with 50 players
         self.current_generation = 0
         self.best_score = 0
 
@@ -181,7 +181,6 @@ class Game:
                 obstacles = []
                 for obstacle, _ in self.obstacles_list:
                     if obstacle.x > player.player_pos_x: obstacles.append(obstacle)
-                print("obstacles", obstacles)
                 
                 player.look(obstacles, self.player_vel_x)
                 
@@ -196,6 +195,10 @@ class Game:
             # self.evaluate_fitness()
             self.population.natural_selection()
             self.current_generation += 1
+
+            # cleanup game resources
+
+            self.main.game = Game(self.main, self.population)
             
         pygame.display.update()
 
@@ -288,7 +291,7 @@ class Game:
         for i, player in enumerate(self.population.pop):
             if not player.dead:
                 if self.obstacles_check_collision(self.obstacles_list, player) != None:
-                    print(f"Player {i}", self.obstacles_check_collision(self.obstacles_list, player))
+                    self.obstacles_check_collision(self.obstacles_list, player)
 
         # TODO check coin collisions
         
@@ -332,8 +335,8 @@ class Game:
             file.write(str(self.high_score))
 
         # coins self.coins_collected
-        with open('save/coins.txt', 'w') as file:
-            file.write(str(self.main.coins + self.coins_collected))
+        # with open('save/coins.txt', 'w') as file:
+            # file.write(str(self.main.coins + self.coins_collected))
 
     #################### DEBUG ####################
 
@@ -462,7 +465,7 @@ class Game:
         #     tools.draw_text(self.main.screen, 'High score', 'center', 38, (settings.WIDTH * 4 // 13, settings.HEIGHT * 3.8 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'you flew', 'center', 63, (settings.WIDTH * 4 // 13, settings.HEIGHT * 4.62 // 13))
-        # tools.draw_text(self.main.screen, '%im' % self.score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)
+        tools.draw_text(self.main.screen, '%im' % self.population.best_score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'and collected', 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 7.86 // 13))  # 89
         # tools.draw_text(self.main.screen, '%i coins' % self.coins_collected, 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 8.53 // 13), settings.YELLOW_COIN)
