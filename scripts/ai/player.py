@@ -115,6 +115,8 @@ class Player:
         
         ## Player Variables ##
             # Player Y position
+            # X pos
+            # X and y velocities
             
         ## Obstacle Variables ##
             # Find distance to the closest obstacle
@@ -122,9 +124,19 @@ class Player:
             # Width of the closest obstacle
             # Y position of closest obstacle
         
-            # Find the gap between the current and next closes obstacles
+            # Find the gap between the current and next closest obstacles
+            # X distance 
+            # Y distance
+        gap_between = 680
         
-        pass
+        vision = [self.player_pos_x,
+                  self.player_pos_y, 
+                  self.player_vel_x, 
+                  self.player_vel_y, 
+                  gap_between, 0, 0, 0, 0]
+        
+        self.vision = vision
+        
 
     def think(self):
         # Neural network decision-making logic goes here.
