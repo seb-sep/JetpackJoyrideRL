@@ -64,6 +64,7 @@ class Species:
                 self.best_fitness = self.players[0].fitness
                 self.rep = self.players[0].brain.clone()
                 # self.champ = self.players[0].clone_for_replay()
+                self.champ = self.players[0]
             else:
                 self.staleness += 1
 

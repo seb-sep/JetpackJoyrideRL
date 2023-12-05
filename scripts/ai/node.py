@@ -14,7 +14,7 @@ class Node:
             self.output_value = self.sigmoid(self.input_sum)
 
         # Propagate the output value to the next nodes
-        print(len(self.output_connections))
+        # print(len(self.output_connections))
         for connection in self.output_connections:
             if connection.enabled:
                 connection.to_node.input_sum += connection.weight * self.output_value

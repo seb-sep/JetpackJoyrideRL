@@ -41,26 +41,54 @@ class Population:
             if player.score > self.best_score:
                 self.best_score = player.score
                 self.best_player = player
+                print(self.best_score)
 
 
     def natural_selection(self):
+        # print('speciating')
         self.speciate()
-        print('species', len(self.species))
+        # print(len(self.species))
+        # print('calculating fitness')
         self.calculate_fitness()
-        print('species', len(self.species))
+        # print(len(self.species))
+        # print('sorting species')
         self.sort_species()
-        print('species', len(self.species))
+        # print(len(self.species))
         # Additional methods and logic
-        # self.kill_stale_species()
         # print('species', len(self.species))
-        self.kill_bad_species()
-        print('species', len(self.species))
+        # print('culling species')
         self.cull_species()
-        print('species', len(self.species))
-        self.mass_extinction()
-        print('species', len(self.species))
-        
-        self.reproduce()
+        # print(len(self.species))
+        # print('set best player')
+        self.set_best_player()
+        # print(len(self.species))
+        # print('killing stale species')
+        # self.kill_stale_species()
+        # print(len(self.species))
+        # print('kill bad species')
+        self.kill_bad_species()
+        # print(len(self.species))
+        # self.mass_extinction()
+        avg_sum = self.get_avg_fitness_sum()
+        children = []
+        for species in self.species:
+            children.append(species.champ.clone())
+            n_children = int(np.floor(species.average_fitness / avg_sum * len(self.pop)) - 1)
+            print('n_children', n_children)
+            for _ in range(n_children):
+                children.append(species.give_me_baby(self.innovation_history))
+
+        while len(children) < len(self.pop):
+            children.append(self.species[0].give_me_baby(self.innovation_history))
+        self.pop.clear()
+        self.pop = children.copy()
+        self.gen += 1
+        [p.brain.generate_network() for p in self.pop]
+        self.population_life = 0
+        print(len(self.pop))
+
+
+        # self.reproduce()
     
     def speciate(self):
         for player in self.pop:
@@ -73,12 +101,15 @@ class Population:
             if not species_found:
                 self.species.append(Species(player))
 
+        
+
     def calculate_fitness(self):
         for player in self.pop:
             player.calculate_fitness()
 
     def sort_species(self):
         # Sort species by fitness or other criteria
+        [species.sort_species() for species in self.species]
         self.species.sort(key=lambda s: s.average_fitness, reverse=True)
 
         
@@ -97,7 +128,7 @@ class Population:
             species.set_average()
 
     def kill_stale_species(self):
-        [print(species.staleness) for species in self.species]
+        # [print(species.staleness) for species in self.species]
         self.species = [s for s in self.species if s.staleness < 15]
 
     def kill_bad_species(self):
@@ -117,7 +148,7 @@ class Population:
         new_population = []
         saved_players = sum([len(species.players) for species in self.species if len(species.players) > 1])
         for species in self.species:
-            species.sort_species()
+            # species.sort_species()
             # new_population.append(species.champ.clone())
             for _ in range(len(species.players) - 1):
                 new_population.append(species.give_me_baby(self.innovation_history))

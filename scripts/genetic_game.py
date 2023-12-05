@@ -140,7 +140,7 @@ class Game:
         # self.main.dt = 0  # TEST, make game freeze until loaded
         
         ####################### GENETIC ALGORITHM #######################
-        self.population = Population(size=50) if population is None else population  # Initialize population with 50 players
+        self.population = Population(size=200) if population is None else population  # Initialize population with 50 players
         self.current_generation = 0
         self.best_score = 0
 
@@ -193,6 +193,7 @@ class Game:
         # Check if all players are dead
         if self.population.all_players_dead():
             # self.evaluate_fitness()
+            print(self.population.best_score)
             self.population.natural_selection()
             self.current_generation += 1
 

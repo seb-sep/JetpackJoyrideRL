@@ -2,6 +2,7 @@ import numpy as np
 from scripts.ai.connection_gene import ConnectionGene
 from scripts.ai.node import Node
 import scipy.special as sp
+from scripts.ai.connection_history import ConnectionHistory
 
 class Genome:
     def __init__(self, inputs, outputs, crossover=False):
@@ -138,18 +139,33 @@ class Genome:
             return True
         return False
 
+    # returns the innovation number for the new mutation
+    # if this mutation has never been seen before then it will be given a new unique innovation number
     def get_innovation_number(self, innovation_history, from_node, to_node):
-        # ... implementation here
-        pass
+        is_new = True
+        connection_innovation_no = 1000
+        for innovation in innovation_history:
+            if innovation.matches(self, from_node, to_node):
+                is_new = False
+                connection_innovation_no = innovation.innovation_no
+                break
+
+        if is_new:
+            inno_nums = []
+            [inno_nums.append(gene.innovation_no) for gene in self.genes]
+            innovation_history.append(ConnectionHistory(from_node, to_node, connection_innovation_no, inno_nums)) 
+        
+        return connection_innovation_no
 
     def fully_connected(self):
         # ... implementation here
         pass
 
     def mutate(self, innovation_history):
-        # ... implementation here
-        pass
-
+        if len(self.genes) == 0: self.add_connection(innovation_history) 
+        if np.random.rand() < 0.8: [gene.mutate_weight() for gene in self.genes]
+        if np.random.rand() < 0.10: self.add_connection(innovation_history)
+        if np.random.rand() < 0.01: self.add_node(innovation_history)
         
     def crossover(self, parent2):
         child = Genome(self.inputs, self.outputs, True)
@@ -162,7 +178,7 @@ class Genome:
         is_enabled = []
         for gene in self.genes:
             set_enabled= True
-            parent_2_gene = self.matching_gene(parent2, gene.innovation_number)
+            parent_2_gene = self.matching_gene(parent2, gene.innovation_no)
             if parent_2_gene != -1:
                 if not gene.enabled or not parent2.genes[parent_2_gene].enabled:
                     if np.random.random() < 0.75:
@@ -178,8 +194,8 @@ class Genome:
         for node in self.nodes:
             child.nodes.append(node.clone())
         for i, gene in enumerate(child_genes):
-            from_node_clone = child.get_node(gene.fromNode.number)
-            to_node_clone = child.get_node(gene.toNode.number)
+            from_node_clone = child.get_node(gene.from_node.number)
+            to_node_clone = child.get_node(gene.to_node.number)
             cloned_gene = gene.clone(from_node_clone, to_node_clone)
             cloned_gene.enabled = is_enabled[i]
             child.genes.append(cloned_gene)
@@ -188,7 +204,7 @@ class Genome:
 
     def matching_gene(self, other_genome, innovation_number):
         for i in range(len(other_genome.genes)):
-            if other_genome.genes[i].innovationNo == innovation_number:
+            if other_genome.genes[i].innovation_no == innovation_number:
                 return i
         return -1
 
@@ -205,8 +221,8 @@ class Genome:
 
         # Copy genes
         for gene in self.genes:
-            from_node_clone = clone.get_node(gene.fromNode.number)
-            to_node_clone = clone.get_node(gene.toNode.number)
+            from_node_clone = clone.get_node(gene.from_node.number)
+            to_node_clone = clone.get_node(gene.to_node.number)
             clone.genes.append(gene.clone(from_node_clone, to_node_clone))
 
         clone.layers = self.layers
@@ -216,6 +232,7 @@ class Genome:
 
         return clone
 
+    # Placeholder for the connect_nodes method, assuming it's defined elsewhere
     def connect_nodes(self):
         [node.output_connections.clear() for node in self.nodes]
         [gene.from_node.output_connections.append(gene) for gene in self.genes]

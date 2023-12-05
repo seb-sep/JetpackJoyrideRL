@@ -5,6 +5,9 @@ import scripts.game as game
 import scripts.menu as menu
 import scripts.settings as settings
 
+import cProfile
+import re
+
 
 class Main:
     def __init__(self):
@@ -47,10 +50,13 @@ class Main:
             self.game.update_game(self)
 
     def update_dt(self):
-        self.dt = self.clock.tick(settings.FPS) / 1000  # delta time in seconds | cap fps
+        self.dt = self.clock.tick(settings.FPS) / 100  # delta time in seconds | cap fps
 
 
-if __name__ == '__main__':
+def main():
     main = Main()
     while main.running:
         main.main_loop()
+
+if __name__ == '__main__':
+    cProfile.run('main()', 'main_stats')

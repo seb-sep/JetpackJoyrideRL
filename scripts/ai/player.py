@@ -4,6 +4,7 @@ import scripts.settings as settings
 import pygame
 
 
+
 class Player:
     def __init__(self):
         self.fitness = 0.0
@@ -45,13 +46,7 @@ class Player:
         self.gravity = 1.2
         self.run_count = -5
         # self.size = 20
-        
-        self.local_obstacle_history = []
-        self.local_random_addition_history = []
-        self.history_counter = 0
-        self.local_obstacle_timer = 0
-        self.local_speed = 10.0
-        self.local_random_addition = 0
+    
 
     def show(self, screen):
         # Draw the player on the screen
@@ -89,8 +84,7 @@ class Player:
 
         # increase distance
         if not self.dead:
-            self.score += dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
-        pass
+            self.score += dt * 0.05 * self.player_vel_x  # TODO change this to foreground x pos
 
     def update(self, dt, game_speed):
         self.move(dt, game_speed)
@@ -119,7 +113,7 @@ class Player:
             # Find the gap between the current and next closest obstacles
             # X distance 
             # Y distance
-        gap_between = 680
+        gap_between = settings.OBSTACLE_OFFSET 
         dist_to_obs_x = 999
         dist_to_obs_y = 999
         
@@ -141,10 +135,10 @@ class Player:
     def think(self):
         # Neural network decision-making logic goes here.
         max = 0
-        print("Vision", self.vision)
+        # print("Vision", self.vision)
         # decision = self.brain.feed_forward2(self.vision)
         decision = self.brain.feed_forward(self.vision)
-        print(decision)
+        # print(decision)
         
         self.is_moving_up = True if decision == 1 else False
         
