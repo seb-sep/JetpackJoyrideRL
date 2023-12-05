@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from scripts.ai.player import Player
+from scripts.ai.species import Species
 
 class Population:
     def __init__(self, size):

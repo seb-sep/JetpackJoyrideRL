@@ -32,7 +32,7 @@ class Genome:
         self.nextNode += 1
         self.nodes[self.biasNode].layer = 0
 
-        self.l1 = np.random.rand(6, 3)
+        self.l1 = np.random.rand(8, 3)
         self.l2 = np.random.rand(3, 2)
 
     def get_node(self, node_number):

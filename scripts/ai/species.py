@@ -16,7 +16,7 @@ class Species:
             self.players.append(player)
             self.best_fitness = player.fitness
             self.rep = player.brain.clone()
-            self.champ = player.clone_for_replay()
+            # self.champ = player.clone_for_replay()
 
     def same_species(self, genome):
         excess_and_disjoint = self.get_excess_disjoint(genome, self.rep)

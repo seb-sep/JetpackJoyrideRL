@@ -25,7 +25,7 @@ class Player:
         self.died_by = None  # Possibilities 'eletricity' and 'rocket'
         self.paused = False
         self.player_pos_y = 645
-        self.player_pos_x = -100
+        self.player_pos_x = 200
         self.player_vel_x = settings.DEFAULT_X_VELOCITY  # TODO make game progressive faster
         self.player_vel_y = 0
         
@@ -62,7 +62,7 @@ class Player:
         # Draw the player on the screen
         player_image = self.player_fly_surface if not self.dead else self.player_dead_surface
         # screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
-        screen.blit(player_image, (100, self.player_pos_y))
+        screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
         print("Player pos: ", self.player_pos_x, self.player_pos_y)
         
 
@@ -125,11 +125,19 @@ class Player:
             # X distance 
             # Y distance
         gap_between = 680
+        dist_to_obs_x = 0
+        dist_to_obs_y = 0
         
+        if len(obstacles) > 0:
+            dist_to_obs_x = obstacles[0].x - self.player_pos_x
+            dist_to_obs_y = obstacles[0].y - self.player_pos_y
+            
         vision = [self.player_pos_x,
                   self.player_pos_y, 
                   self.player_vel_x, 
                   self.player_vel_y, 
+                  dist_to_obs_x,
+                  dist_to_obs_y,
                   gap_between]
         
         self.vision = vision

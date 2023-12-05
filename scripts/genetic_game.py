@@ -181,7 +181,8 @@ class Game:
                 obstacles = []
                 for obstacle, _ in self.obstacles_list:
                     if obstacle.x > player.player_pos_x: obstacles.append(obstacle)
-                # print(obstacles)
+                print("obstacles", obstacles)
+                
                 player.look(obstacles, self.player_vel_x)
                 
                 # Player thinks and makes a decision (move_up or not move_up)
