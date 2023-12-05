@@ -176,15 +176,19 @@ class Game:
         # Update each player in the population
         for player in self.population.pop:
             if not player.dead:
+                
                 # Player looks at the environment
                 obstacles = []
                 for obstacle, _ in self.obstacles_list:
                     if obstacle.x > player.player_pos_x: obstacles.append(obstacle)
-                    
+                print(obstacles)
                 player.look(obstacles, self.player_vel_x)
                 
                 # Player thinks and makes a decision (move_up or not move_up)
                 player_decision = player.think()
+                
+                player.update(player.player_vel_x, self.main)
+                player.show(main.screen)
 
         # Check if all players are dead
         if self.population.all_players_dead():
