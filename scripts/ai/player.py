@@ -11,7 +11,6 @@ class Player:
         self.unadjusted_fitness = 0.0
         self.lifespan = 0
         self.best_score = 0
-        self.dead = False
         self.score = 0
         self.gen = 0
         self.genome_inputs = 7
@@ -63,7 +62,7 @@ class Player:
         # Draw the player on the screen
         player_image = self.player_fly_surface if not self.dead else self.player_dead_surface
         # screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
-        screen.blit(player_image, (-50, 100))
+        screen.blit(player_image, (100, self.player_pos_y))
         print("Player pos: ", self.player_pos_x, self.player_pos_y)
         
 

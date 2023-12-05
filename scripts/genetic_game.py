@@ -61,8 +61,8 @@ class Game:
 
         ####################### EVENTS #######################
 
-        self.DIED = pygame.USEREVENT + 1  # event id
-        self.died = pygame.event.Event(self.DIED)  # event object
+        # self.DIED = pygame.USEREVENT + 1  # event id
+        # self.died = pygame.event.Event(self.DIED)  # event object
 
         # self.TRY_SPAWN_ROCKET = pygame.USEREVENT + 2 # event id
         # self.try_spawn_rocket = pygame.event.Event(self.TRY_SPAWN_ROCKET)  # event object
@@ -83,11 +83,11 @@ class Game:
         self.fly_sound_list = []
         self.fly_sound_list.append(pygame.mixer.Sound('assets/sounds/FlyTest2.wav'))
 
-        self.died_eletricity_sound = pygame.mixer.Sound('assets/sounds/DiedEletricity.wav')
-        self.died_eletricity_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.4)
+        # self.died_eletricity_sound = pygame.mixer.Sound('assets/sounds/DiedEletricity.wav')
+        # self.died_eletricity_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.4)
 
-        self.died_rocket_sound = pygame.mixer.Sound('assets/sounds/367987__chrisbutler99__launch.wav')
-        self.died_rocket_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.05)
+        # self.died_rocket_sound = pygame.mixer.Sound('assets/sounds/367987__chrisbutler99__launch.wav')
+        # self.died_rocket_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.05)
 
         ####################### GLOBAL VARIABLES #######################
 
@@ -140,7 +140,7 @@ class Game:
         # self.main.dt = 0  # TEST, make game freeze until loaded
         
         ####################### GENETIC ALGORITHM #######################
-        self.population = Population(size=1)  # Initialize population with 50 players
+        self.population = Population(size=10)  # Initialize population with 50 players
         self.current_generation = 0
         self.best_score = 0
 
@@ -192,7 +192,7 @@ class Game:
 
         # Check if all players are dead
         if self.population.all_players_dead():
-            self.evaluate_fitness()
+            # self.evaluate_fitness()
             self.population.natural_selection()
             self.current_generation += 1
             
@@ -284,24 +284,31 @@ class Game:
 
     def check_collisions(self):
         # check obstacles collisions
-        for player in self.population.pop:
-            self.obstacles_check_collision(self.obstacles_list, player)
+        for i, player in enumerate(self.population.pop):
+            if not player.dead:
+                if self.obstacles_check_collision(self.obstacles_list, player) != None:
+                    print(f"Player {i}", self.obstacles_check_collision(self.obstacles_list, player))
 
         # TODO check coin collisions
         
     # Added a player argument so that we can check obstacle collisions for a specific player
     def obstacles_check_collision(self, obstacles, player):
         for obstacle, _ in obstacles:
-            # if obstacle.colliderect(self.player_rect):  # check if any obstacle is colliding with player
-            #     pygame.event.post(self.died)
+
+            if obstacle.colliderect(player.player_rect):  # check if any obstacle is colliding with player
+                # pygame.event.post(player.died)
+                player.dead = True
+                return player.score
+
             obstacle_collision_rect = pygame.Rect(obstacle[0]+25, obstacle[1]+18, obstacle[2]-50, obstacle[3]-36)
             if obstacle_collision_rect.colliderect(player.player_rect):  # check if any obstacle is colliding with player
-                pygame.event.post(player.died)
+                # pygame.event.post(player.died)
                 player.died_by = 'eletricity'
-
+                player.dead = True
+                
             # DEBUG HITBOX
             if settings.DEBUG and settings.DEBUG_HIT_BOXES:
-                pygame.draw.rect(self.main.screen, settings.YELLOW, obstacle_collision_rect, 1)
+                pygame.draw.rect(player.main.screen, settings.YELLOW, obstacle_collision_rect, 1)
 
     ################## LOAD/SAVE ##################
 
@@ -454,10 +461,10 @@ class Game:
         #     tools.draw_text(self.main.screen, 'High score', 'center', 38, (settings.WIDTH * 4 // 13, settings.HEIGHT * 3.8 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'you flew', 'center', 63, (settings.WIDTH * 4 // 13, settings.HEIGHT * 4.62 // 13))
-        tools.draw_text(self.main.screen, '%im' % self.score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)
+        # tools.draw_text(self.main.screen, '%im' % self.score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'and collected', 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 7.86 // 13))  # 89
-        tools.draw_text(self.main.screen, '%i coins' % self.coins_collected, 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 8.53 // 13), settings.YELLOW_COIN)
+        # tools.draw_text(self.main.screen, '%i coins' % self.coins_collected, 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 8.53 // 13), settings.YELLOW_COIN)
 
         # draw buttons
         self.button_play_again.draw()
