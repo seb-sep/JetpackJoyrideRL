@@ -7,6 +7,7 @@ from scripts.ai.population import Population
 import scripts.tools as tools
 import scripts.settings as settings
 import scripts.particle_generator as particle_generator
+import pickle
 
 
 class Game:
@@ -404,18 +405,12 @@ class Game:
             #     self.check_rockets()
 
             # inputs key down
-            # if event.type == pygame.KEYDOWN and not self.dead:
-            #     # pause
-            #     if event.key == pygame.K_ESCAPE:
-            #         if self.paused:
-            #             self.paused = False
-            #             pygame.mixer.music.unpause()
-            #         else:
-            #             self.paused = True
-            #             pygame.mixer.music.pause()
-            #     if event.key == pygame.K_w or event.key == pygame.K_SPACE:
-            #         self.is_moving_up = True
-
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w or event.key == pygame.K_SPACE:
+                    to_save = self.population.best_player.brain
+                    with open('beast.pkl', 'wb') as file:
+                        pickle.dump(to_save, file)
+                    
             # # inputs key up
             # if event.type == pygame.KEYUP and not self.dead:
             #     if event.key == pygame.K_w or event.key == pygame.K_SPACE:
