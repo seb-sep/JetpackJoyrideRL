@@ -96,20 +96,20 @@ class Game:
         self.timer = 0  # time running the game scene
 
         # score
-        self.score = 0
-        self.high_score = 0
-        self.new_high_score = False
-        self.coins_collected = 0
+        # self.score = 0
+        # self.high_score = 0
+        # self.new_high_score = False
+        # self.coins_collected = 0
 
         # player
-        self.is_moving_up = False
-        self.dead = False
-        self.died_by = None  # Possibilities 'eletricity' and 'rocket'
-        self.paused = False
-        self.player_pos_y = 645
-        self.player_pos_x = -100
-        self.player_vel_x = settings.DEFAULT_X_VELOCITY  # TODO make game progressive faster
-        self.player_vel_y = 0
+        # self.is_moving_up = False
+        # self.dead = False
+        # self.died_by = None  # Possibilities 'eletricity' and 'rocket'
+        # self.paused = False
+        # self.player_pos_y = 645
+        # self.player_pos_x = -100
+        # self.player_vel_x = settings.DEFAULT_X_VELOCITY  # TODO make game progressive faster
+        # self.player_vel_y = 0
 
         # objets positions
         self.bg_pos_x = 0
@@ -140,7 +140,7 @@ class Game:
         # self.main.dt = 0  # TEST, make game freeze until loaded
         
         ####################### GENETIC ALGORITHM #######################
-        self.population = Population(size=50)  # Initialize population with 50 players
+        self.population = Population(size=1)  # Initialize population with 50 players
         self.current_generation = 0
         self.best_score = 0
 
@@ -154,8 +154,8 @@ class Game:
         # self.timer += self.main.dt
 
         self.check_events(main)
-        if self.paused:
-            self.main.dt = 0
+        # if self.paused:
+        #     self.main.dt = 0
         self.check_obstacles()
         self.move_things()
         
@@ -163,15 +163,15 @@ class Game:
         # self.check_rockets()
         # self.rocket_spawner.update((self.player_pos_x, self.player_pos_y))
         
-        if self.dead:
+        if self.population.all_players_dead():
             self.draw_deathscreen()
         else:
             self.draw_score_gui()
         self.check_collisions()
-        self.update_x_velocity()
+        # self.update_x_velocity()
         self.debug()
 
-        self.check_paused()
+        # self.check_paused()
         
         # Update each player in the population
         for player in self.population.pop:
@@ -234,32 +234,32 @@ class Game:
         self.move_obstacles(self.obstacles_list)
 
         # particle movement
-        self.fly_particle.update((self.player_pos_x + 19, self.player_pos_y + 51), self.is_moving_up)
+        # self.fly_particle.update((self.player_pos_x + 19, self.player_pos_y + 51), self.is_moving_up)
 
         # change player velocity (up || down) -change faster if going faster
-        if not self.is_moving_up:
-            self.player_vel_y += self.gravity * self.main.dt * self.player_vel_x * 1.8
-        else:
-            self.player_vel_y -= self.gravity * self.main.dt * self.player_vel_x * 1.8
+        # if not self.is_moving_up:
+        #     self.player_vel_y += self.gravity * self.main.dt * self.player_vel_x * 1.8
+        # else:
+        #     self.player_vel_y -= self.gravity * self.main.dt * self.player_vel_x * 1.8
 
         # keep player inside the bound
-        if self.player_pos_y < settings.MAX_HEIGHT:  # if touch celling
-            self.player_pos_y = settings.MAX_HEIGHT
-            self.player_vel_y = 0
-        elif self.player_pos_y > settings.MIN_HEIGHT - self.player_surface.get_size()[0]:  # if touch ground
-            self.player_pos_y = settings.MIN_HEIGHT - self.player_surface.get_size()[0]
-            self.player_vel_y = 0
-        else:
-            self.player_pos_y += self.player_vel_y * self.main.dt
+        # if self.player_pos_y < settings.MAX_HEIGHT:  # if touch celling
+        #     self.player_pos_y = settings.MAX_HEIGHT
+        #     self.player_vel_y = 0
+        # elif self.player_pos_y > settings.MIN_HEIGHT - self.player_surface.get_size()[0]:  # if touch ground
+        #     self.player_pos_y = settings.MIN_HEIGHT - self.player_surface.get_size()[0]
+        #     self.player_vel_y = 0
+        # else:
+        #     self.player_pos_y += self.player_vel_y * self.main.dt
 
         # update player position and draw
-        self.player_rect.y = self.player_pos_y
-        self.player_rect.x = self.player_pos_x
-        self.main.screen.blit(self.player_surface, self.player_rect)
+        # self.player_rect.y = self.player_pos_y
+        # self.player_rect.x = self.player_pos_x
+        # self.main.screen.blit(self.player_surface, self.player_rect)
 
         # increase distance
-        if not self.dead:
-            self.score += self.main.dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
+        # if not self.dead:
+        #     self.score += self.main.dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
 
     def move_background(self):
         self.bg_pos_x -= self.player_vel_x * self.main.dt
@@ -364,28 +364,28 @@ class Game:
                 pygame.mixer.music.load('assets/sounds/Gameplay.wav')
                 pygame.mixer.music.play(-1, fade_ms=2600)
 
-            # kill player
-            if event.type == self.DIED and not self.dead:
-                self.dead = True
-                self.is_moving_up = False
-                self.player_surface = self.player_dead_surface
-                self.lerp_x_vel = True
-                self.player_vel_x_start = self.player_vel_x
+            for player in self.population.pop:
+                if event.type == player.DIED and not player.dead:
+                    player.dead = True
+                    player.is_moving_up = False
+                    player.player_surface = player.player_dead_surface
+                    player.lerp_x_vel = True
+                    player.player_vel_x_start = player.player_vel_x
 
-                # sound
-                if self.died_by == 'eletricity':
-                    self.died_eletricity_sound.play()
-                elif self.died_by == 'rocket':
-                    self.died_rocket_sound.play()
+                # # sound
+                # if self.died_by == 'eletricity':
+                #     self.died_eletricity_sound.play()
+                # elif self.died_by == 'rocket':
+                #     self.died_rocket_sound.play()
 
-                # coins
-                self.coins_collected = int(self.score/11)
-                self.main.coins += self.coins_collected
+                # # coins
+                # self.coins_collected = int(self.score/11)
+                # self.main.coins += self.coins_collected
 
-                # high score
-                if round(self.score) > self.high_score:
-                    self.high_score = int(self.score)
-                    self.new_high_score = True
+                # # high score
+                # if round(self.score) > self.high_score:
+                #     self.high_score = int(self.score)
+                #     self.new_high_score = True
 
             # try to spawn rocket
             # if event.type == self.TRY_SPAWN_ROCKET and not self.dead:
@@ -441,17 +441,17 @@ class Game:
             tools.draw_text(self.main.screen, 'PAUSED', 'center', 96, (settings.WIDTH // 2, settings.HEIGHT // 2))
 
     def draw_score_gui(self):
-        tools.draw_text(self.main.screen, 'Distance: %i' % self.score, 'left', 48, (34, 90))
+        tools.draw_text(self.main.screen, 'Distance: %i' % max(p.score for p in self.population.pop), 'left', 48, (34, 90))
         # tools.draw_text(self.main.screen, 'Velocity: %i' % round(self.player_vel_x), 'left', 32, (34, 116))
-        tools.draw_text(self.main.screen, 'Best: %i' % self.high_score, 'left', 32, (34, 116))
+        tools.draw_text(self.main.screen, 'Best: %i' % 420, 'left', 32, (34, 116))
 
     def draw_deathscreen(self):
         # draw dark overlay
         self.death_screen_surface.fill((0, 0, 0, 170))
         self.main.screen.blit(self.death_screen_surface, (0, 0))
 
-        if self.new_high_score:
-            tools.draw_text(self.main.screen, 'High score', 'center', 38, (settings.WIDTH * 4 // 13, settings.HEIGHT * 3.8 // 13), settings.YELLOW_COIN)
+        # if self.new_high_score:
+        #     tools.draw_text(self.main.screen, 'High score', 'center', 38, (settings.WIDTH * 4 // 13, settings.HEIGHT * 3.8 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'you flew', 'center', 63, (settings.WIDTH * 4 // 13, settings.HEIGHT * 4.62 // 13))
         tools.draw_text(self.main.screen, '%im' % self.score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)

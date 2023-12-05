@@ -62,13 +62,10 @@ class Player:
     def show(self, screen):
         # Draw the player on the screen
         player_image = self.player_fly_surface if not self.dead else self.player_dead_surface
-        screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
+        # screen.blit(player_image, (self.player_pos_x, self.player_pos_y))
+        screen.blit(player_image, (-50, 100))
+        print("Player pos: ", self.player_pos_x, self.player_pos_y)
         
-
-    def increment_counters(self):
-        self.lifespan += 1
-        if self.lifespan % 3 == 0:
-            self.score += 1
 
     def move(self, game_speed, main):
         # Movement logic goes here. Adjust posY and check for collisions.
@@ -102,7 +99,6 @@ class Player:
         pass
 
     def update(self, dt, game_speed):
-        self.increment_counters()
         self.move(dt, game_speed)
 
     def look(self, obstacles, game_speed):
