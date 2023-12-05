@@ -34,19 +34,34 @@ class Population:
         return all(player.dead for player in self.pop)
 
     def set_best_player(self):
-        # Implementation depends on your specific logic for determining the best player
-        pass
+        for player in self.pop:
+            if player.score > self.best_score:
+                self.best_score = player.score
+                self.best_player = player
+
 
     def natural_selection(self):
         self.speciate()
         self.calculate_fitness()
         self.sort_species()
         # Additional methods and logic
-        # ...
+        self.kill_stale_species()
+        self.kill_bad_species()
+        self.cull_species()
+        self.mass_extinction()
+        self.reproduce()
     
     def speciate(self):
-        # Implementation depends on your specific logic for speciation
-        pass
+        # to be reviewed
+        for player in self.pop:
+            species_found = False
+            for species in self.species:
+                if species.same_species(player.brain):
+                    species.players.append(player)
+                    species_found = True
+                    break
+            if not species_found:
+                self.species.append(Species(player))
 
     def calculate_fitness(self):
         for player in self.pop:
@@ -54,7 +69,9 @@ class Population:
 
     def sort_species(self):
         # Sort species by fitness or other criteria
-        pass
+        self.species.sort(key=lambda s: s.average_fitness, reverse=True)
+
+        
 
     def mass_extinction(self):
         if len(self.species) > 5:
@@ -78,7 +95,19 @@ class Population:
         
     # Checks if all the players in the population have died
     def all_players_dead(self):
-        for player in self.pop:
-            if player.dead == False: return False
-        
-        return True
+        # using all() to shorten the code
+        return all(player.dead for player in self.pop)
+    
+
+    def reproduce(self):
+        new_population = []
+        saved_players = sum([len(species.players) for species in self.species if len(species.players) > 1])
+        for species in self.species:
+            species.sort_species()
+            new_population.append(species.champ.clone())
+            for _ in range(len(species.players) - 1):
+                new_population.append(species.give_me_baby(self.innovation_history))
+        while len(new_population) < len(self.pop) - saved_players:
+            species = np.random.choice(self.species)
+            new_population.append(species.give_me_baby(self.innovation_history))
+        self.pop = new_population
