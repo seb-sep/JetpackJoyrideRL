@@ -145,7 +145,7 @@ class Game:
         ####################### GENETIC ALGORITHM #######################
         if os.path.exists('beast.pkl'): 
             player = Player()
-            
+            self.main.game_speed = 500
             with open('beast.pkl', 'rb') as file:
                 player.brain = pickle.load(file)
             

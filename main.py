@@ -17,6 +17,7 @@ class Main:
         pygame.display.set_icon(pygame.image.load(settings.ICON_LOC))
         self.clock = pygame.time.Clock()
         self.dt = None
+        self.game_speed = 100
 
         # audio
         self.global_volume = 0.56
@@ -50,7 +51,7 @@ class Main:
             self.game.update_game(self)
 
     def update_dt(self):
-        self.dt = self.clock.tick(settings.FPS) / 100  # delta time in seconds | cap fps
+        self.dt = self.clock.tick(settings.FPS) / self.game_speed  # delta time in seconds | cap fps
 
 
 if __name__ == '__main__':
