@@ -9,8 +9,7 @@ class Player:
     def __init__(self):
         self.fitness = 0.0
         
-        self.unadjusted_fitness = 0.0
-        self.lifespan = 0
+        # self.unadjusted_fitness = 0.0
         self.best_score = 0
         self.score = 0
         self.gen = 0
@@ -44,10 +43,7 @@ class Player:
         self.died = pygame.event.Event(self.DIED)  # event object
         
         self.gravity = 1.2
-        self.run_count = -5
-        # self.size = 20
-    
-
+        
     def show(self, screen):
         # Draw the player on the screen
         player_image = self.player_fly_surface if not self.dead else self.player_dead_surface

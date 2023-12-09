@@ -14,7 +14,6 @@ class Population:
         self.gen_players = []
         self.species = []
         self.mass_extinction_event = False
-        self.new_stage = False
         self.population_life = 0
 
         sum = 0
@@ -62,9 +61,12 @@ class Population:
         # print('set best player')
         self.set_best_player()
         # print(len(self.species))
+        
+        # ToDo: Find out why stale species is resulting in a population of 0 -> Check how staleness is calculated
         # print('killing stale species')
         # self.kill_stale_species()
         # print(len(self.species))
+        
         # print('kill bad species')
         self.kill_bad_species()
         # print(len(self.species))
@@ -76,10 +78,10 @@ class Population:
             n_children = int(np.floor(species.average_fitness / avg_sum * len(self.pop)) - 1)
             print('n_children', n_children)
             for _ in range(n_children):
-                children.append(species.give_me_baby(self.innovation_history))
+                children.append(species.get_child(self.innovation_history))
 
         while len(children) < len(self.pop):
-            children.append(self.species[0].give_me_baby(self.innovation_history))
+            children.append(self.species[0].get_child(self.innovation_history))
         self.pop.clear()
         self.pop = children.copy()
         self.gen += 1
@@ -87,8 +89,7 @@ class Population:
         self.population_life = 0
         print(len(self.pop))
 
-
-        # self.reproduce()
+        self.reproduce()
     
     def speciate(self):
         for player in self.pop:
@@ -149,10 +150,10 @@ class Population:
         saved_players = sum([len(species.players) for species in self.species if len(species.players) > 1])
         for species in self.species:
             # species.sort_species()
-            # new_population.append(species.champ.clone())
+            new_population.append(species.champ.clone())
             for _ in range(len(species.players) - 1):
-                new_population.append(species.give_me_baby(self.innovation_history))
+                new_population.append(species.get_child(self.innovation_history))
         while len(new_population) < len(self.pop) - saved_players:
             species = np.random.choice(self.species)
-            new_population.append(species.give_me_baby(self.innovation_history))
+            new_population.append(species.get_child(self.innovation_history))
         self.pop = new_population

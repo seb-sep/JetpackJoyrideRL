@@ -31,7 +31,6 @@ class Species:
         return compatibility < self.compatibility_threshold
 
     def get_excess_disjoint(self, brain1: Genome, brain2: Genome):
-        # print(brain1, brain2)
         matching = 0.0
         for gene1 in brain1.genes:
             for gene2 in brain2.genes:
@@ -63,8 +62,8 @@ class Species:
                 self.staleness = 0
                 self.best_fitness = self.players[0].fitness
                 self.rep = self.players[0].brain.clone()
-                # self.champ = self.players[0].clone_for_replay()
-                self.champ = self.players[0]
+                self.champ = self.players[0].clone()
+                # self.champ = self.players[0]
             else:
                 self.staleness += 1
 
@@ -72,15 +71,19 @@ class Species:
         if self.players:
             self.average_fitness = sum(player.fitness for player in self.players) / len(self.players)
 
-    def give_me_baby(self, innovation_history):
+    def get_child(self, innovation_history):
         if random.random() < 0.25:
-            baby = self.select_player().clone()
+            child = self.select_player().clone()
         else:
+            print("getting child")
             parent1 = self.select_player()
             parent2 = self.select_player()
-            baby = parent1.crossover(parent2) if parent1.fitness >= parent2.fitness else parent2.crossover(parent1)
-        baby.brain.mutate(innovation_history)
-        return baby
+            print("got parents")
+            child = parent1.crossover(parent2) if parent1.fitness >= parent2.fitness else parent2.crossover(parent1)
+            print("crossover")
+            
+        child.brain.mutate(innovation_history)
+        return child
 
     def select_player(self):
         fitness_sum = sum(player.fitness for player in self.players)
@@ -90,6 +93,8 @@ class Species:
             running_sum += player.fitness
             if running_sum > rand:
                 return player
+            
+        print("Something went wrong, no player was selected")
         return self.players[0]
 
     def cull(self):

@@ -18,8 +18,6 @@ class Game:
     def __init__(self, main, population=None):
         self.main = main
 
-        # self.rocket_spawner = RocketSpawner(self.main)
-
         # paused screen black overlay
         self.paused_screen_surface = pygame.Surface((settings.WIDTH, settings.HEIGHT), pygame.SRCALPHA, 32)
         self.death_screen_surface = pygame.Surface((settings.WIDTH, settings.HEIGHT), pygame.SRCALPHA, 32)
@@ -29,19 +27,6 @@ class Game:
         # TODO correct bg image in photoshop
         self.bg_surface = pygame.image.load('assets/sprites/BackdropMain.png').convert()  # convert the image to a pygame lightweight format
         self.bg_surface = pygame.transform.scale2x(self.bg_surface)  # double the size
-
-        # player ----------
-
-        self.player_fly_surface = pygame.image.load('assets/sprites/skins/PlayerFly_' + self.main.player_skin + '.png').convert_alpha()
-        self.player_fly_surface = pygame.transform.scale(self.player_fly_surface, [64, 68])  # 1.2x
-
-        self.player_dead_surface = pygame.image.load('assets/sprites/skins/PlayerDead_' + self.main.player_skin + '.png').convert_alpha()
-        self.player_dead_surface = pygame.transform.scale(self.player_dead_surface, [82, 74])
-
-        self.player_surface = self.player_fly_surface  # default player sprite
-        self.player_rect = self.player_surface.get_rect(center=(256, 360))  # return new rectangle covering entire surface
-
-        # --------------------
 
         self.obstacles_surface = pygame.image.load('assets/sprites/Zapper1.png').convert_alpha()
         self.obstacles_surface = pygame.transform.scale2x(self.obstacles_surface)
@@ -98,22 +83,6 @@ class Game:
         self.gravity = settings.GRAVITY  # TODO maybe a item that change gravity?
 
         self.timer = 0  # time running the game scene
-
-        # score
-        # self.score = 0
-        # self.high_score = 0
-        # self.new_high_score = False
-        # self.coins_collected = 0
-
-        # player
-        # self.is_moving_up = False
-        # self.dead = False
-        # self.died_by = None  # Possibilities 'eletricity' and 'rocket'
-        # self.paused = False
-        # self.player_pos_y = 645
-        # self.player_pos_x = -100
-        # self.player_vel_x = settings.DEFAULT_X_VELOCITY  # TODO make game progressive faster
-        # self.player_vel_y = 0
 
         # objets positions
         self.bg_pos_x = 0
@@ -259,34 +228,6 @@ class Game:
         # obstacle movement
         self.foreground_pos_x -= self.player_vel_x * self.main.dt * 1.1  # 1.1 is for parallax with background
         self.move_obstacles(self.obstacles_list)
-
-        # particle movement
-        # self.fly_particle.update((self.player_pos_x + 19, self.player_pos_y + 51), self.is_moving_up)
-
-        # change player velocity (up || down) -change faster if going faster
-        # if not self.is_moving_up:
-        #     self.player_vel_y += self.gravity * self.main.dt * self.player_vel_x * 1.8
-        # else:
-        #     self.player_vel_y -= self.gravity * self.main.dt * self.player_vel_x * 1.8
-
-        # keep player inside the bound
-        # if self.player_pos_y < settings.MAX_HEIGHT:  # if touch celling
-        #     self.player_pos_y = settings.MAX_HEIGHT
-        #     self.player_vel_y = 0
-        # elif self.player_pos_y > settings.MIN_HEIGHT - self.player_surface.get_size()[0]:  # if touch ground
-        #     self.player_pos_y = settings.MIN_HEIGHT - self.player_surface.get_size()[0]
-        #     self.player_vel_y = 0
-        # else:
-        #     self.player_pos_y += self.player_vel_y * self.main.dt
-
-        # update player position and draw
-        # self.player_rect.y = self.player_pos_y
-        # self.player_rect.x = self.player_pos_x
-        # self.main.screen.blit(self.player_surface, self.player_rect)
-
-        # increase distance
-        # if not self.dead:
-        #     self.score += self.main.dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
 
     def move_background(self):
         self.bg_pos_x -= self.player_vel_x * self.main.dt

@@ -110,7 +110,7 @@ class Genome:
 
         self.connect_nodes()
 
-    def add_connection(self, innovation_history):
+    def add_connection(self, innovation_history: ConnectionHistory):
         if self.fully_connected():
             print("connection failed")
             return
@@ -118,7 +118,7 @@ class Genome:
         # Randomly select nodes for new connection
         random_node1 = np.random.randint(len(self.nodes))
         random_node2 = np.random.randint(len(self.nodes))
-        while self.random_connection_nodes_are_shit(random_node1, random_node2):
+        while self.check_bad_connections(random_node1, random_node2):
             random_node1 = np.random.randint(len(self.nodes))
             random_node2 = np.random.randint(len(self.nodes))
 
@@ -132,7 +132,7 @@ class Genome:
 
         self.connect_nodes()
 
-    def random_connection_nodes_are_shit(self, r1, r2):
+    def check_bad_connections(self, r1: Node, r2: Node):
         if self.nodes[r1].layer == self.nodes[r2].layer:
             return True
         if self.nodes[r1].is_connected_to(self.nodes[r2]):
@@ -162,10 +162,21 @@ class Genome:
         pass
 
     def mutate(self, innovation_history):
-        if len(self.genes) == 0: self.add_connection(innovation_history) 
-        if np.random.rand() < 0.8: [gene.mutate_weight() for gene in self.genes]
-        if np.random.rand() < 0.10: self.add_connection(innovation_history)
-        if np.random.rand() < 0.01: self.add_node(innovation_history)
+        if len(self.genes) == 0:  
+            print("adding connection")
+            self.add_connection(innovation_history) 
+            
+        if np.random.rand() < 0.8: 
+            print("mutating weight")
+            [gene.mutate_weight() for gene in self.genes]
+            
+        if np.random.rand() < 0.10: 
+            print("adding connection")
+            self.add_connection(innovation_history)
+            
+        if np.random.rand() < 0.01: 
+            print("adding node")
+            self.add_node(innovation_history)
         
     def crossover(self, parent2):
         child = Genome(self.inputs, self.outputs, True)
@@ -208,8 +219,10 @@ class Genome:
                 return i
         return -1
 
+    # prints the genome network in console
     def print_genome(self):
         # ... implementation here
+        
         pass
 
     def clone(self):
@@ -232,7 +245,6 @@ class Genome:
 
         return clone
 
-    # Placeholder for the connect_nodes method, assuming it's defined elsewhere
     def connect_nodes(self):
         [node.output_connections.clear() for node in self.nodes]
         [gene.from_node.output_connections.append(gene) for gene in self.genes]
