@@ -62,10 +62,18 @@ class Species:
                 self.staleness = 0
                 self.best_fitness = self.players[0].fitness
                 self.rep = self.players[0].brain.clone()
-                self.champ = self.players[0].clone()
-                # self.champ = self.players[0]
+                self.champ = self.players[0]
             else:
                 self.staleness += 1
+                
+    def sort_species_2(self):
+        self.players.sort(key=lambda x: x.fitness, reverse=True)
+        if self.players:
+            if self.players[0].fitness > self.best_fitness:
+                self.staleness = 0
+                self.best_fitness = self.players[0].fitness
+                self.rep = self.players[0].brain.clone()
+                self.champ = self.players[0]
 
     def set_average(self):
         if self.players:

@@ -149,7 +149,7 @@ class Population:
         new_population = []
         saved_players = sum([len(species.players) for species in self.species if len(species.players) > 1])
         for species in self.species:
-            # species.sort_species()
+            species.sort_species_2()
             new_population.append(species.champ.clone())
             for _ in range(len(species.players) - 1):
                 new_population.append(species.get_child(self.innovation_history))
