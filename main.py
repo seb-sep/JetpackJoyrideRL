@@ -6,6 +6,7 @@ import scripts.menu as menu
 import scripts.settings as settings
 
 
+
 class Main:
     def __init__(self):
         pygame.init()
@@ -14,6 +15,7 @@ class Main:
         pygame.display.set_icon(pygame.image.load(settings.ICON_LOC))
         self.clock = pygame.time.Clock()
         self.dt = None
+        self.game_speed = 100
 
         # audio
         self.global_volume = 0.56
@@ -34,6 +36,7 @@ class Main:
         self.in_menu = True
         self.game = None
         self.menu = menu.Menu(self)
+        self.scores = []
 
         self.already_instantiated_game = False
 
@@ -47,7 +50,7 @@ class Main:
             self.game.update_game(self)
 
     def update_dt(self):
-        self.dt = self.clock.tick(settings.FPS) / 1000  # delta time in seconds | cap fps
+        self.dt = self.clock.tick(settings.FPS) / self.game_speed  # delta time in seconds | cap fps
 
 
 if __name__ == '__main__':

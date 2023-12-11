@@ -1,1 +1,4 @@
-pygame==2.0.1
+pygame
+scipy
+numpy
+matplotlib

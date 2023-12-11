@@ -1,19 +1,22 @@
 # this module was the first made, need more object oriented, create player, obstacle, debug and save/load own classes
 
+import os
 import pygame
 import random
 import sys
+from scripts.ai.player import Player
+from scripts.ai.population import Population
 import scripts.tools as tools
 import scripts.settings as settings
 import scripts.particle_generator as particle_generator
+import pickle
+from matplotlib import pyplot as plt
 
 
 class Game:
 
-    def __init__(self, main):
+    def __init__(self, main, population=None):
         self.main = main
-
-        self.rocket_spawner = RocketSpawner(self.main)
 
         # paused screen black overlay
         self.paused_screen_surface = pygame.Surface((settings.WIDTH, settings.HEIGHT), pygame.SRCALPHA, 32)
@@ -24,19 +27,6 @@ class Game:
         # TODO correct bg image in photoshop
         self.bg_surface = pygame.image.load('assets/sprites/BackdropMain.png').convert()  # convert the image to a pygame lightweight format
         self.bg_surface = pygame.transform.scale2x(self.bg_surface)  # double the size
-
-        # player ----------
-
-        self.player_fly_surface = pygame.image.load('assets/sprites/skins/PlayerFly_' + self.main.player_skin + '.png').convert_alpha()
-        self.player_fly_surface = pygame.transform.scale(self.player_fly_surface, [64, 68])  # 1.2x
-
-        self.player_dead_surface = pygame.image.load('assets/sprites/skins/PlayerDead_' + self.main.player_skin + '.png').convert_alpha()
-        self.player_dead_surface = pygame.transform.scale(self.player_dead_surface, [82, 74])
-
-        self.player_surface = self.player_fly_surface  # default player sprite
-        self.player_rect = self.player_surface.get_rect(center=(256, 360))  # return new rectangle covering entire surface
-
-        # --------------------
 
         self.obstacles_surface = pygame.image.load('assets/sprites/Zapper1.png').convert_alpha()
         self.obstacles_surface = pygame.transform.scale2x(self.obstacles_surface)
@@ -60,15 +50,15 @@ class Game:
 
         ####################### EVENTS #######################
 
-        self.DIED = pygame.USEREVENT + 1  # event id
-        self.died = pygame.event.Event(self.DIED)  # event object
+        # self.DIED = pygame.USEREVENT + 1  # event id
+        # self.died = pygame.event.Event(self.DIED)  # event object
 
-        self.TRY_SPAWN_ROCKET = pygame.USEREVENT + 2 # event id
-        self.try_spawn_rocket = pygame.event.Event(self.TRY_SPAWN_ROCKET)  # event object
+        # self.TRY_SPAWN_ROCKET = pygame.USEREVENT + 2 # event id
+        # self.try_spawn_rocket = pygame.event.Event(self.TRY_SPAWN_ROCKET)  # event object
 
         self.START_GAMEPLAY_MUSIC = pygame.USEREVENT + 3
 
-        pygame.time.set_timer(self.TRY_SPAWN_ROCKET, 1000)  # try to spawn rocket every second
+        # pygame.time.set_timer(self.TRY_SPAWN_ROCKET, 1000)  # try to spawn rocket every second
 
         ####################### AUDIOS #######################
 
@@ -82,33 +72,17 @@ class Game:
         self.fly_sound_list = []
         self.fly_sound_list.append(pygame.mixer.Sound('assets/sounds/FlyTest2.wav'))
 
-        self.died_eletricity_sound = pygame.mixer.Sound('assets/sounds/DiedEletricity.wav')
-        self.died_eletricity_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.4)
+        # self.died_eletricity_sound = pygame.mixer.Sound('assets/sounds/DiedEletricity.wav')
+        # self.died_eletricity_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.4)
 
-        self.died_rocket_sound = pygame.mixer.Sound('assets/sounds/367987__chrisbutler99__launch.wav')
-        self.died_rocket_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.05)
+        # self.died_rocket_sound = pygame.mixer.Sound('assets/sounds/367987__chrisbutler99__launch.wav')
+        # self.died_rocket_sound.set_volume(self.main.global_volume * self.main.sfx_volume * 0.05)
 
         ####################### GLOBAL VARIABLES #######################
 
         self.gravity = settings.GRAVITY  # TODO maybe a item that change gravity?
 
         self.timer = 0  # time running the game scene
-
-        # score
-        self.score = 0
-        self.high_score = 0
-        self.new_high_score = False
-        self.coins_collected = 0
-
-        # player
-        self.is_moving_up = False
-        self.dead = False
-        self.died_by = None  # Possibilities 'eletricity' and 'rocket'
-        self.paused = False
-        self.player_pos_y = 645
-        self.player_pos_x = -100
-        self.player_vel_x = settings.DEFAULT_X_VELOCITY  # TODO make game progressive faster
-        self.player_vel_y = 0
 
         # objets positions
         self.bg_pos_x = 0
@@ -137,28 +111,87 @@ class Game:
         self.load_save()
 
         # self.main.dt = 0  # TEST, make game freeze until loaded
+        
+        ####################### GENETIC ALGORITHM #######################
+        if len(sys.argv) > 1 and sys.argv[1] == 'load':
+            player = Player()
+            self.main.game_speed = 500
+            with open('beast.pkl', 'rb') as file:
+                player.brain = pickle.load(file)
+            
+            self.population = Population(1)
+            self.population.pop = [player]
+        else: 
+            self.population = Population(size=200) if population is None else population  # Initialize population with 50 players
+       
+        self.current_generation = 0
+        self.best_score = 0
 
     def update_game(self, main):
+        
+        # if (not self.population.pop[0].dead):
+            # print('Population', self.population.pop[0].player_pos_y, self.population.pop[0].dead)
+            
         self.main = main
 
         # self.timer += self.main.dt
 
         self.check_events(main)
-        if self.paused:
-            self.main.dt = 0
+        # if self.paused:
+        #     self.main.dt = 0
         self.check_obstacles()
         self.move_things()
-        self.check_rockets()
-        self.rocket_spawner.update((self.player_pos_x, self.player_pos_y))
-        if self.dead:
+        
+        # Rocket functionality is disabled for now for training purposes
+        # self.check_rockets()
+        # self.rocket_spawner.update((self.player_pos_x, self.player_pos_y))
+        
+        if self.population.all_players_dead():
             self.draw_deathscreen()
         else:
             self.draw_score_gui()
         self.check_collisions()
-        self.update_x_velocity()
+        # self.update_x_velocity()
         self.debug()
 
-        self.check_paused()
+        # self.check_paused()
+        
+        # Update each player in the population
+        for player in self.population.pop:
+            if not player.dead:
+                
+                # Player looks at the environment
+                obstacles = []
+                for obstacle, _ in self.obstacles_list:
+                    if obstacle.x > player.player_pos_x: obstacles.append(obstacle)
+                
+                player.look(obstacles, self.player_vel_x)
+                
+                # Player thinks and makes a decision (move_up or not move_up)
+                player.think()
+                
+                player.update(player.player_vel_x, self.main)
+                player.show(main.screen)
+
+        # Check if all players are dead
+        if self.population.all_players_dead():
+            # self.evaluate_fitness()
+            print(self.population.best_score)
+            self.main.scores.append(max(p.score for p in self.population.pop))
+            plt.plot(self.main.scores)
+            plt.xlabel('Generation')
+            plt.ylabel('Score')
+            plt.title('Score per Generation')
+            plt.savefig('scores.png')
+
+
+            self.population.natural_selection()
+            self.current_generation += 1
+
+            # cleanup game resources
+
+            self.main.game = Game(self.main, self.population)
+            
         pygame.display.update()
 
     ################## MOVE ##################
@@ -196,34 +229,6 @@ class Game:
         self.foreground_pos_x -= self.player_vel_x * self.main.dt * 1.1  # 1.1 is for parallax with background
         self.move_obstacles(self.obstacles_list)
 
-        # particle movement
-        self.fly_particle.update((self.player_pos_x + 19, self.player_pos_y + 51), self.is_moving_up)
-
-        # change player velocity (up || down) -change faster if going faster
-        if not self.is_moving_up:
-            self.player_vel_y += self.gravity * self.main.dt * self.player_vel_x * 1.8
-        else:
-            self.player_vel_y -= self.gravity * self.main.dt * self.player_vel_x * 1.8
-
-        # keep player inside the bound
-        if self.player_pos_y < settings.MAX_HEIGHT:  # if touch celling
-            self.player_pos_y = settings.MAX_HEIGHT
-            self.player_vel_y = 0
-        elif self.player_pos_y > settings.MIN_HEIGHT - self.player_surface.get_size()[0]:  # if touch ground
-            self.player_pos_y = settings.MIN_HEIGHT - self.player_surface.get_size()[0]
-            self.player_vel_y = 0
-        else:
-            self.player_pos_y += self.player_vel_y * self.main.dt
-
-        # update player position and draw
-        self.player_rect.y = self.player_pos_y
-        self.player_rect.x = self.player_pos_x
-        self.main.screen.blit(self.player_surface, self.player_rect)
-
-        # increase distance
-        if not self.dead:
-            self.score += self.main.dt * self.player_vel_x * 0.05  # TODO change this to foreground x pos
-
     def move_background(self):
         self.bg_pos_x -= self.player_vel_x * self.main.dt
         self.main.screen.blit(self.bg_surface, (self.bg_pos_x, 0))  # put bg_surface on screen surface
@@ -247,22 +252,31 @@ class Game:
 
     def check_collisions(self):
         # check obstacles collisions
-        self.obstacles_check_collision(self.obstacles_list)
+        for i, player in enumerate(self.population.pop):
+            if not player.dead:
+                if self.obstacles_check_collision(self.obstacles_list, player) != None:
+                    self.obstacles_check_collision(self.obstacles_list, player)
 
         # TODO check coin collisions
-
-    def obstacles_check_collision(self, obstacles):
+        
+    # Added a player argument so that we can check obstacle collisions for a specific player
+    def obstacles_check_collision(self, obstacles, player):
         for obstacle, _ in obstacles:
-            # if obstacle.colliderect(self.player_rect):  # check if any obstacle is colliding with player
-            #     pygame.event.post(self.died)
-            obstacle_collision_rect = pygame.Rect(obstacle[0]+25, obstacle[1]+18, obstacle[2]-50, obstacle[3]-36)
-            if obstacle_collision_rect.colliderect(self.player_rect):  # check if any obstacle is colliding with player
-                pygame.event.post(self.died)
-                self.died_by = 'eletricity'
 
+            if obstacle.colliderect(player.player_rect):  # check if any obstacle is colliding with player
+                # pygame.event.post(player.died)
+                player.dead = True
+                return player.score
+
+            obstacle_collision_rect = pygame.Rect(obstacle[0]+25, obstacle[1]+18, obstacle[2]-50, obstacle[3]-36)
+            if obstacle_collision_rect.colliderect(player.player_rect):  # check if any obstacle is colliding with player
+                # pygame.event.post(player.died)
+                player.died_by = 'eletricity'
+                player.dead = True
+                
             # DEBUG HITBOX
             if settings.DEBUG and settings.DEBUG_HIT_BOXES:
-                pygame.draw.rect(self.main.screen, settings.YELLOW, obstacle_collision_rect, 1)
+                pygame.draw.rect(player.main.screen, settings.YELLOW, obstacle_collision_rect, 1)
 
     ################## LOAD/SAVE ##################
 
@@ -285,8 +299,8 @@ class Game:
             file.write(str(self.high_score))
 
         # coins self.coins_collected
-        with open('save/coins.txt', 'w') as file:
-            file.write(str(self.main.coins + self.coins_collected))
+        # with open('save/coins.txt', 'w') as file:
+            # file.write(str(self.main.coins + self.coins_collected))
 
     #################### DEBUG ####################
 
@@ -325,50 +339,47 @@ class Game:
                 pygame.mixer.music.load('assets/sounds/joyride_ost.wav')
                 pygame.mixer.music.play(-1, fade_ms=2600)
 
-            # kill player
-            if event.type == self.DIED and not self.dead:
-                self.dead = True
-                self.is_moving_up = False
-                self.player_surface = self.player_dead_surface
-                self.lerp_x_vel = True
-                self.player_vel_x_start = self.player_vel_x
+            for player in self.population.pop:
+                if event.type == player.DIED and not player.dead:
+                    player.dead = True
+                    player.is_moving_up = False
+                    player.player_surface = player.player_dead_surface
+                    player.lerp_x_vel = True
+                    player.player_vel_x_start = player.player_vel_x
 
-                # sound
-                if self.died_by == 'eletricity':
-                    self.died_eletricity_sound.play()
-                elif self.died_by == 'rocket':
-                    self.died_rocket_sound.play()
+                # # sound
+                # if self.died_by == 'eletricity':
+                #     self.died_eletricity_sound.play()
+                # elif self.died_by == 'rocket':
+                #     self.died_rocket_sound.play()
 
-                # coins
-                self.coins_collected = int(self.score/11)
-                self.main.coins += self.coins_collected
+                # # coins
+                # self.coins_collected = int(self.score/11)
+                # self.main.coins += self.coins_collected
 
-                # high score
-                if round(self.score) > self.high_score:
-                    self.high_score = int(self.score)
-                    self.new_high_score = True
+                # # high score
+                # if round(self.score) > self.high_score:
+                #     self.high_score = int(self.score)
+                #     self.new_high_score = True
 
             # try to spawn rocket
-            if event.type == self.TRY_SPAWN_ROCKET and not self.dead:
-                self.check_rockets()
+            # if event.type == self.TRY_SPAWN_ROCKET and not self.dead:
+            #     self.check_rockets()
 
             # inputs key down
-            if event.type == pygame.KEYDOWN and not self.dead:
-                # pause
-                if event.key == pygame.K_ESCAPE:
-                    if self.paused:
-                        self.paused = False
-                        pygame.mixer.music.unpause()
-                    else:
-                        self.paused = True
-                        pygame.mixer.music.pause()
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w or event.key == pygame.K_SPACE:
-                    self.is_moving_up = True
-
-            # inputs key up
-            if event.type == pygame.KEYUP and not self.dead:
-                if event.key == pygame.K_w or event.key == pygame.K_SPACE:
-                    self.is_moving_up = False
+                    to_save = self.population.best_player.brain
+                    with open('beast.pkl', 'wb') as file:
+                        pickle.dump(to_save, file)
+                                        
+                    
+            # # inputs key up
+            # if event.type == pygame.KEYUP and not self.dead:
+            #     if event.key == pygame.K_w or event.key == pygame.K_SPACE:
+            #         self.is_moving_up = False
+                
+                
 
     def check_obstacles(self):
         # check if need to create or destroy obstacles this frame, and do if needed
@@ -383,9 +394,10 @@ class Game:
             self.obstacles_list.pop(0)
             
         # destroy obstacles if they are behind the player
-        if len(self.obstacles_list) > 0:
-            while self.obstacles_list[0][0].x < self.player_pos_x - 100:
-                self.obstacles_list.pop(0)
+        # if len(self.obstacles_list) > 0:
+        #     while self.obstacles_list[0][0].x < self.player_pos_x - 100:
+        #         self.obstacles_list.pop(0)
+        #         print(self.obstacles_list)
         
 
     def update_x_velocity(self):
@@ -399,23 +411,23 @@ class Game:
             tools.draw_text(self.main.screen, 'PAUSED', 'center', 96, (settings.WIDTH // 2, settings.HEIGHT // 2))
 
     def draw_score_gui(self):
-        tools.draw_text(self.main.screen, 'Distance: %i' % self.score, 'left', 48, (34, 90))
+        tools.draw_text(self.main.screen, 'Distance: %i' % max(p.score for p in self.population.pop), 'left', 48, (34, 90))
         # tools.draw_text(self.main.screen, 'Velocity: %i' % round(self.player_vel_x), 'left', 32, (34, 116))
-        tools.draw_text(self.main.screen, 'Best: %i' % self.high_score, 'left', 32, (34, 116))
+        tools.draw_text(self.main.screen, 'Best: %i' % 420, 'left', 32, (34, 116))
 
     def draw_deathscreen(self):
         # draw dark overlay
         self.death_screen_surface.fill((0, 0, 0, 170))
         self.main.screen.blit(self.death_screen_surface, (0, 0))
 
-        if self.new_high_score:
-            tools.draw_text(self.main.screen, 'High score', 'center', 38, (settings.WIDTH * 4 // 13, settings.HEIGHT * 3.8 // 13), settings.YELLOW_COIN)
+        # if self.new_high_score:
+        #     tools.draw_text(self.main.screen, 'High score', 'center', 38, (settings.WIDTH * 4 // 13, settings.HEIGHT * 3.8 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'you flew', 'center', 63, (settings.WIDTH * 4 // 13, settings.HEIGHT * 4.62 // 13))
-        tools.draw_text(self.main.screen, '%im' % self.score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)
+        tools.draw_text(self.main.screen, '%im' % self.population.best_score, 'center', 161, (settings.WIDTH * 4 // 13, settings.HEIGHT * 6.32 // 13), settings.YELLOW_COIN)
 
         tools.draw_text(self.main.screen, 'and collected', 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 7.86 // 13))  # 89
-        tools.draw_text(self.main.screen, '%i coins' % self.coins_collected, 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 8.53 // 13), settings.YELLOW_COIN)
+        # tools.draw_text(self.main.screen, '%i coins' % self.coins_collected, 'center', 38, ((settings.WIDTH * 4 // 13), settings.HEIGHT * 8.53 // 13), settings.YELLOW_COIN)
 
         # draw buttons
         self.button_play_again.draw()
@@ -431,69 +443,69 @@ class Game:
             self.main.in_menu = True
             self.main.playing = False
 
-    def check_rockets(self):
-        # check if can spawn then try to spawn rockets
-        # travelled distance > distance covered with obstacles until now
-        if -self.foreground_pos_x > settings.OBSTACLE_OFFSET * self.obstacle_num and self.obstacle_num > 5:
-            if random.randint(1, 6) == 1:  # chance of spawning rocket
-                self.rocket_spawner.spawn()
+    # def check_rockets(self):
+    #     # check if can spawn then try to spawn rockets
+    #     # travelled distance > distance covered with obstacles until now
+    #     if -self.foreground_pos_x > settings.OBSTACLE_OFFSET * self.obstacle_num and self.obstacle_num > 5:
+    #         if random.randint(1, 6) == 1:  # chance of spawning rocket
+    #             self.rocket_spawner.spawn()
 
     @staticmethod
     def lerp(A, B, C):
         return ((1 - C) * A) + ((1 - C) * B)
 
 
-class Rocket:
-    def __init__(self, rocket_spawner, player_position):
-        self.rocket_spawner = rocket_spawner
-        self.spawn_y_location = random.randrange(settings.MAX_HEIGHT, settings.MIN_HEIGHT)
-        self.position = (player_position[0] + 3840, self.spawn_y_location)
-        self.warning_active = True
+# class Rocket:
+#     def __init__(self, rocket_spawner, player_position):
+#         self.rocket_spawner = rocket_spawner
+#         self.spawn_y_location = random.randrange(settings.MAX_HEIGHT, settings.MIN_HEIGHT)
+#         self.position = (player_position[0] + 3840, self.spawn_y_location)
+#         self.warning_active = True
 
 
-class RocketSpawner:
-    def __init__(self, main):
-        self.main = main
-        self.player_position = ()
-        self.rocket_surface = pygame.image.load('assets/sprites/Rocket.png').convert_alpha()
-        self.rocket_surface = pygame.transform.smoothscale(self.rocket_surface, (int(self.rocket_surface.get_width() * 0.75), int(self.rocket_surface.get_height() * 0.75)))
-        self.warning_surface = pygame.image.load('assets/sprites/RocketWarning.png').convert_alpha()
-        self.warning_surface = pygame.transform.smoothscale(self.warning_surface, (int(self.warning_surface.get_width() * 1.2), int(self.warning_surface.get_height() * 1.2)))
-        self.velocity_y = 100
-        self.velocity_x = 2.4
-        self.rocket_list = []
+# class RocketSpawner:
+#     def __init__(self, main):
+#         self.main = main
+#         self.player_position = ()
+#         self.rocket_surface = pygame.image.load('assets/sprites/Rocket.png').convert_alpha()
+#         self.rocket_surface = pygame.transform.smoothscale(self.rocket_surface, (int(self.rocket_surface.get_width() * 0.75), int(self.rocket_surface.get_height() * 0.75)))
+#         self.warning_surface = pygame.image.load('assets/sprites/RocketWarning.png').convert_alpha()
+#         self.warning_surface = pygame.transform.smoothscale(self.warning_surface, (int(self.warning_surface.get_width() * 1.2), int(self.warning_surface.get_height() * 1.2)))
+#         self.velocity_y = 100
+#         self.velocity_x = 2.4
+#         self.rocket_list = []
 
-    def update(self, player_position):
-        self.player_position = player_position
+#     def update(self, player_position):
+#         self.player_position = player_position
 
-        # move
-        for rocket in self.rocket_list:
-            if rocket.position[0] > settings.WIDTH:  # if on screen
-                if self.main.game.player_pos_y < rocket.position[1]:  # follow up
-                    rocket.position = (rocket.position[0] - self.main.game.player_vel_x * self.main.dt * self.velocity_x, rocket.position[1] - self.velocity_y * self.main.dt)
-                elif self.main.game.player_pos_y > rocket.position[1]:  # follow down
-                    rocket.position = (rocket.position[0] - self.main.game.player_vel_x * self.main.dt * self.velocity_x, rocket.position[1] + self.velocity_y * self.main.dt)
-            else:  # move on straight line
-                rocket.position = (rocket.position[0] - self.main.game.player_vel_x * self.main.dt * self.velocity_x, rocket.position[1])
+#         # move
+#         for rocket in self.rocket_list:
+#             if rocket.position[0] > settings.WIDTH:  # if on screen
+#                 if self.main.game.player_pos_y < rocket.position[1]:  # follow up
+#                     rocket.position = (rocket.position[0] - self.main.game.player_vel_x * self.main.dt * self.velocity_x, rocket.position[1] - self.velocity_y * self.main.dt)
+#                 elif self.main.game.player_pos_y > rocket.position[1]:  # follow down
+#                     rocket.position = (rocket.position[0] - self.main.game.player_vel_x * self.main.dt * self.velocity_x, rocket.position[1] + self.velocity_y * self.main.dt)
+#             else:  # move on straight line
+#                 rocket.position = (rocket.position[0] - self.main.game.player_vel_x * self.main.dt * self.velocity_x, rocket.position[1])
 
-        # destroy if needed
-        for i, rocket in enumerate(self.rocket_list):
-            if rocket.position[0] < -200:
-                self.rocket_list.pop(i)
+#         # destroy if needed
+#         for i, rocket in enumerate(self.rocket_list):
+#             if rocket.position[0] < -200:
+#                 self.rocket_list.pop(i)
 
-        # check collision
-        for rocket in self.rocket_list:
-            rocket_rect = pygame.Rect(rocket.position, (self.rocket_surface.get_size()))
-            if rocket_rect.colliderect(self.main.game.player_rect):
-                pygame.event.post(self.main.game.died)
-                self.main.game.died_by = 'rocket'
+#         # check collision
+#         for rocket in self.rocket_list:
+#             rocket_rect = pygame.Rect(rocket.position, (self.rocket_surface.get_size()))
+#             if rocket_rect.colliderect(self.main.game.player_rect):
+#                 pygame.event.post(self.main.game.died)
+#                 self.main.game.died_by = 'rocket'
 
-        # draw
-        for rocket in self.rocket_list:
-            if rocket.position[0] > settings.WIDTH:  # draw warning
-                self.main.screen.blit(self.warning_surface, (1200, rocket.position[1]))
-            self.main.screen.blit(self.rocket_surface, rocket.position)
+#         # draw
+#         for rocket in self.rocket_list:
+#             if rocket.position[0] > settings.WIDTH:  # draw warning
+#                 self.main.screen.blit(self.warning_surface, (1200, rocket.position[1]))
+#             self.main.screen.blit(self.rocket_surface, rocket.position)
 
-    def spawn(self):
-        self.rocket_list.append(Rocket(self.main, (self.main.game.player_pos_x, self.main.game.player_pos_y)))
+#     def spawn(self):
+#         self.rocket_list.append(Rocket(self.main, (self.main.game.player_pos_x, self.main.game.player_pos_y)))
 
