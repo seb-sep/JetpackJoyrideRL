@@ -80,10 +80,15 @@ class Genome:
         if len(self.genes) == 0:
             self.add_connection(innovation_history)
             return
-
+        
         random_connection = np.random.randint(len(self.genes))
+        print('bias node: ', self.nodes[self.bias_node].number)
+        [print(gene.from_node.number, gene.to_node.number) for gene in self.genes]
         while self.genes[random_connection].from_node == self.nodes[self.bias_node] and len(self.genes) != 1:
+            # print('bias node: ', self.nodes[self.bias_node].number)
+            # [print(gene.from_node.number, gene.to_node.number) for gene in self.genes]
             random_connection = np.random.randint(len(self.genes))
+            # print('random_connection', random_connection)
 
         self.genes[random_connection].enabled = False
 
@@ -100,6 +105,7 @@ class Genome:
         self.genes.append(ConnectionGene(self.get_node(new_node_no), self.genes[random_connection].to_node, self.genes[random_connection].weight, connection_innovation_number))
         
         self.get_node(new_node_no).layer = self.genes[random_connection].from_node.layer + 1
+
 
         # Increment layer numbers and adjust layers if needed
         if self.get_node(new_node_no).layer == self.genes[random_connection].to_node.layer:
@@ -195,9 +201,11 @@ class Genome:
                     if np.random.random() < 0.75:
                         set_enabled = False
                 if np.random.random() < 0.5:
-                    child_genes.append(gene)
+                    print(f'adding gene {gene.from_node.number} {gene.to_node.number}')
+                    if gene.from_node.number is not self.bias_node: child_genes.append(gene)
                 else:
-                    child_genes.append(parent2.genes[parent_2_gene])
+                    print(f'adding gene {parent2.genes[parent_2_gene].from_node.number} {parent2.genes[parent_2_gene].to_node.number}')
+                    if parent2.genes[parent_2_gene].from_node.number is not parent2.bias_node: child_genes.append(parent2.genes[parent_2_gene])
             else:
                 child_genes.append(gene)
                 set_enabled = gene.enabled
@@ -209,7 +217,8 @@ class Genome:
             to_node_clone = child.get_node(gene.to_node.number)
             cloned_gene = gene.clone(from_node_clone, to_node_clone)
             cloned_gene.enabled = is_enabled[i]
-            child.genes.append(cloned_gene)
+            print(f'adding gene {cloned_gene.from_node.number} {cloned_gene.to_node.number}')
+            if cloned_gene.from_node.number is not child.bias_node: child.genes.append(cloned_gene)
         child.connect_nodes()
         return child
 
@@ -246,6 +255,8 @@ class Genome:
         return clone
 
     def connect_nodes(self):
+        # print('num nodes', len(self.nodes))
         [node.output_connections.clear() for node in self.nodes]
+        # print('num genes', len(self.genes))
         [gene.from_node.output_connections.append(gene) for gene in self.genes]
 

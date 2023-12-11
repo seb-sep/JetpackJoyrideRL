@@ -80,7 +80,7 @@ class Population:
             for _ in range(n_children):
                 children.append(species.get_child(self.innovation_history))
 
-        while len(children) < len(self.pop):
+        while len(children) < len(self.pop) and len(self.species) > 0:
             children.append(self.species[0].get_child(self.innovation_history))
         self.pop.clear()
         self.pop = children.copy()

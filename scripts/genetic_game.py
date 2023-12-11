@@ -148,6 +148,22 @@ class Game:
         
         if self.population.all_players_dead():
             self.draw_deathscreen()
+            print(self.population.best_score)
+            self.main.scores.append(max(p.score for p in self.population.pop))
+            plt.plot(self.main.scores)
+            plt.xlabel('Generation')
+            plt.ylabel('Score')
+            plt.title('Score per Generation')
+            plt.savefig('scores.png')
+
+
+            self.population.natural_selection()
+            self.current_generation += 1
+
+            # cleanup game resources
+
+            self.main.game = Game(self.main, self.population)
+
         else:
             self.draw_score_gui()
         self.check_collisions()
@@ -173,25 +189,6 @@ class Game:
                 player.update(player.player_vel_x, self.main)
                 player.show(main.screen)
 
-        # Check if all players are dead
-        if self.population.all_players_dead():
-            # self.evaluate_fitness()
-            print(self.population.best_score)
-            self.main.scores.append(max(p.score for p in self.population.pop))
-            plt.plot(self.main.scores)
-            plt.xlabel('Generation')
-            plt.ylabel('Score')
-            plt.title('Score per Generation')
-            plt.savefig('scores.png')
-
-
-            self.population.natural_selection()
-            self.current_generation += 1
-
-            # cleanup game resources
-
-            self.main.game = Game(self.main, self.population)
-            
         pygame.display.update()
 
     ################## MOVE ##################
